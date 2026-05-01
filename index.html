@@ -21,14 +21,12 @@
             align-items: center;
         }
 
-        /* Container Auth */
         .auth-container {
             width: 100%;
             max-width: 1200px;
             padding: 20px;
         }
 
-        /* Card Auth */
         .auth-card {
             background: white;
             border-radius: 24px;
@@ -185,15 +183,9 @@
             .auth-card {
                 flex-direction: column;
             }
-            
-            .auth-left {
+            .auth-left, .auth-right {
                 padding: 30px;
             }
-            
-            .auth-right {
-                padding: 30px;
-            }
-            
             .auth-left h1 {
                 font-size: 1.8rem;
             }
@@ -208,22 +200,11 @@
             <h1><i class="fas fa-map-marker-alt"></i> Fleet Tracker Pro</h1>
             <p>Solusi monitoring GPS real-time untuk armada kendaraan Anda dengan fitur lengkap dan akurat.</p>
             <div class="features">
-                <div class="feature-item">
-                    <i class="fas fa-satellite-dish"></i>
-                    <span>Pelacakan GPS Real-time</span>
-                </div>
-                <div class="feature-item">
-                    <i class="fas fa-draw-polygon"></i>
-                    <span>Smart Geofencing & Alert</span>
-                </div>
-                <div class="feature-item">
-                    <i class="fas fa-chart-line"></i>
-                    <span>Telemetry Lengkap</span>
-                </div>
-                <div class="feature-item">
-                    <i class="fas fa-history"></i>
-                    <span>Playback Riwayat Perjalanan</span>
-                </div>
+                <div class="feature-item"><i class="fas fa-satellite-dish"></i><span>Pelacakan GPS Real-time</span></div>
+                <div class="feature-item"><i class="fas fa-draw-polygon"></i><span>Smart Geofencing & Alert</span></div>
+                <div class="feature-item"><i class="fas fa-chart-line"></i><span>Telemetry Lengkap</span></div>
+                <div class="feature-item"><i class="fas fa-history"></i><span>Playback Riwayat Perjalanan</span></div>
+                <div class="feature-item"><i class="fas fa-save"></i><span>Geofence Tersimpan Otomatis</span></div>
             </div>
         </div>
         <div class="auth-right">
@@ -235,7 +216,6 @@
             <div id="errorMsg" class="error-message"></div>
             <div id="successMsg" class="success-message"></div>
 
-            <!-- Form Login -->
             <div id="loginForm" class="auth-form active">
                 <form id="login">
                     <div class="form-group">
@@ -250,7 +230,6 @@
                 </form>
             </div>
 
-            <!-- Form Register -->
             <div id="registerForm" class="auth-form">
                 <form id="register">
                     <div class="form-group">
@@ -281,86 +260,64 @@
 </div>
 
 <script>
-    // Konfigurasi localStorage keys
     const STORAGE_USERS = 'fleet_users';
     const STORAGE_CURRENT_USER = 'fleet_current_user';
 
-    // Inisialisasi users di localStorage jika belum ada
     function initUsers() {
         if (!localStorage.getItem(STORAGE_USERS)) {
-            const defaultUsers = [
-                {
-                    id: 1,
-                    name: 'Admin User',
-                    email: 'admin@example.com',
-                    username: 'admin',
-                    password: 'admin123',
-                    createdAt: new Date().toISOString()
-                }
-            ];
+            const defaultUsers = [{
+                id: 1,
+                name: 'Admin User',
+                email: 'admin@example.com',
+                username: 'admin',
+                password: 'admin123',
+                createdAt: new Date().toISOString()
+            }];
             localStorage.setItem(STORAGE_USERS, JSON.stringify(defaultUsers));
         }
     }
 
-    // Tampilkan pesan error
     function showError(message) {
         const errorDiv = document.getElementById('errorMsg');
         errorDiv.textContent = message;
         errorDiv.style.display = 'block';
-        
-        setTimeout(() => {
-            errorDiv.style.display = 'none';
-        }, 4000);
+        setTimeout(() => errorDiv.style.display = 'none', 4000);
     }
 
-    // Tampilkan pesan sukses
     function showSuccess(message) {
         const successDiv = document.getElementById('successMsg');
         successDiv.textContent = message;
         successDiv.style.display = 'block';
-        
-        setTimeout(() => {
-            successDiv.style.display = 'none';
-        }, 4000);
+        setTimeout(() => successDiv.style.display = 'none', 4000);
     }
 
-    // Fungsi Register
     function registerUser(event) {
         event.preventDefault();
-        
         const name = document.getElementById('regName').value.trim();
         const email = document.getElementById('regEmail').value.trim();
         const username = document.getElementById('regUsername').value.trim();
         const password = document.getElementById('regPassword').value;
         const confirmPassword = document.getElementById('regConfirmPassword').value;
         
-        // Validasi
         if (!name || !email || !username || !password) {
             showError('Semua field harus diisi!');
             return;
         }
-        
         if (password !== confirmPassword) {
             showError('Password dan konfirmasi password tidak cocok!');
             return;
         }
-        
         if (password.length < 6) {
             showError('Password minimal 6 karakter!');
             return;
         }
         
-        // Ambil users dari localStorage
         const users = JSON.parse(localStorage.getItem(STORAGE_USERS));
-        
-        // Cek apakah email atau username sudah terdaftar
-        const existingUser = users.find(u => u.email === email || u.username === username);
-        if (existingUser) {
+        if (users.find(u => u.email === email || u.username === username)) {
             showError('Email atau username sudah terdaftar!');
             return;
         }
         
-        // Buat user baru
         const newUser = {
             id: users.length + 1,
             name: name,
@@ -369,25 +326,16 @@
             password: password,
             createdAt: new Date().toISOString()
         };
-        
         users.push(newUser);
         localStorage.setItem(STORAGE_USERS, JSON.stringify(users));
         
         showSuccess('Pendaftaran berhasil! Silakan login.');
-        
-        // Reset form
         document.getElementById('register').reset();
-        
-        // Pindah ke tab login setelah 1.5 detik
-        setTimeout(() => {
-            document.querySelector('[data-tab="login"]').click();
-        }, 1500);
+        setTimeout(() => document.querySelector('[data-tab="login"]').click(), 1500);
     }
 
-    // Fungsi Login
     function loginUser(event) {
         event.preventDefault();
-        
         const emailOrUsername = document.getElementById('loginEmail').value.trim();
         const password = document.getElementById('loginPassword').value;
         
@@ -396,74 +344,38 @@
             return;
         }
         
-        // Ambil users dari localStorage
         const users = JSON.parse(localStorage.getItem(STORAGE_USERS));
-        
-        // Cari user berdasarkan email atau username
-        const user = users.find(u => 
-            (u.email === emailOrUsername || u.username === emailOrUsername) && 
-            u.password === password
-        );
+        const user = users.find(u => (u.email === emailOrUsername || u.username === emailOrUsername) && u.password === password);
         
         if (!user) {
             showError('Email/Username atau password salah!');
             return;
         }
         
-        // Simpan session user
-        const sessionUser = {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            username: user.username,
-            loginTime: new Date().toISOString()
-        };
-        
-        localStorage.setItem(STORAGE_CURRENT_USER, JSON.stringify(sessionUser));
+        localStorage.setItem(STORAGE_CURRENT_USER, JSON.stringify({
+            id: user.id, name: user.name, email: user.email, username: user.username, loginTime: new Date().toISOString()
+        }));
         
         showSuccess('Login berhasil! Mengarahkan ke dashboard...');
-        
-        // Redirect ke dashboard
-        setTimeout(() => {
-            window.location.href = 'dashboard.html';
-        }, 1500);
+        setTimeout(() => window.location.href = 'dashboard.html', 1500);
     }
 
-    // Tab switching
     function initTabs() {
-        const tabs = document.querySelectorAll('.auth-tab');
-        const loginForm = document.getElementById('loginForm');
-        const registerForm = document.getElementById('registerForm');
-        
-        tabs.forEach(tab => {
+        document.querySelectorAll('.auth-tab').forEach(tab => {
             tab.addEventListener('click', () => {
                 const tabName = tab.getAttribute('data-tab');
-                
-                // Update active tab
-                tabs.forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
                 tab.classList.add('active');
-                
-                // Update active form
-                if (tabName === 'login') {
-                    loginForm.classList.add('active');
-                    registerForm.classList.remove('active');
-                } else {
-                    loginForm.classList.remove('active');
-                    registerForm.classList.add('active');
-                }
-                
-                // Clear messages
+                document.getElementById('loginForm').classList.toggle('active', tabName === 'login');
+                document.getElementById('registerForm').classList.toggle('active', tabName === 'register');
                 document.getElementById('errorMsg').style.display = 'none';
                 document.getElementById('successMsg').style.display = 'none';
             });
         });
     }
 
-    // Cek apakah user sudah login
     function checkAuth() {
-        const currentUser = localStorage.getItem(STORAGE_CURRENT_USER);
-        if (currentUser) {
-            // User sudah login, redirect ke dashboard
+        if (localStorage.getItem(STORAGE_CURRENT_USER)) {
             window.location.href = 'dashboard.html';
         }
     }
@@ -477,6 +389,5 @@
     document.getElementById('login').addEventListener('submit', loginUser);
     document.getElementById('register').addEventListener('submit', registerUser);
 </script>
-
 </body>
 </html>
