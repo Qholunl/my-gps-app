@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>GPS Fleet Dashboard - Traccar Style with Cloud Database</title>
+    <title>GPS Fleet Dashboard - Complete Features with Accordion</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <style>
-        /* ========== CSS SAMA PERSIS SEPERTI PROGRAM LAMA ========== */
+        /* ========== CSS LENGKAP DENGAN ACCORDION ========== */
         * {
             margin: 0;
             padding: 0;
@@ -87,9 +87,56 @@
             background: #f87171;
         }
 
+        /* ========== ACCORDION STYLES ========== */
+        .accordion-item {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .accordion-header {
+            padding: 14px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .accordion-header:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .accordion-header i:first-child {
+            width: 28px;
+            margin-right: 10px;
+        }
+
+        .accordion-header .accordion-icon {
+            transition: transform 0.3s ease;
+        }
+
+        .accordion-header.active .accordion-icon {
+            transform: rotate(90deg);
+        }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .accordion-content.show {
+            max-height: 500px;
+        }
+
+        .accordion-content-inner {
+            padding: 10px 15px 15px 40px;
+        }
+
         .device-search {
-            padding: 15px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0 0 10px 0;
         }
 
         .device-search input {
@@ -108,10 +155,8 @@
         }
 
         .device-list {
-            flex: 1;
-            overflow-y: auto;
-            padding: 10px;
             max-height: 300px;
+            overflow-y: auto;
         }
 
         .device-item {
@@ -225,20 +270,6 @@
             transform: scale(1.05);
         }
 
-        .add-device-section {
-            padding: 15px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            margin: 10px 0;
-        }
-
-        .section-title {
-            font-size: 0.8rem;
-            font-weight: bold;
-            margin-bottom: 10px;
-            color: rgba(255, 255, 255, 0.8);
-        }
-
         .add-device-form {
             display: flex;
             flex-direction: column;
@@ -249,7 +280,7 @@
             padding: 8px 12px;
             border: none;
             border-radius: 8px;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.15);
             color: white;
             outline: none;
             font-size: 0.8rem;
@@ -698,9 +729,7 @@
         }
 
         .saved-geofences-section {
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            margin-top: 10px;
-            padding: 15px;
+            margin-top: 5px;
         }
 
         .saved-geofences-title {
@@ -711,7 +740,7 @@
         }
 
         .saved-geofence-list {
-            max-height: 150px;
+            max-height: 200px;
             overflow-y: auto;
         }
 
@@ -754,7 +783,6 @@
             margin-left: 5px;
         }
 
-        /* Mode Switch */
         .mode-switch {
             display: flex;
             align-items: center;
@@ -861,7 +889,6 @@
             background: #667eea;
         }
 
-        /* Notification Permission */
         .notif-permission {
             position: fixed;
             bottom: 20px;
@@ -928,36 +955,64 @@
                 <p>Real-time GPS Monitoring</p>
             </div>
         </div>
+
+        <!-- User Info (di luar accordion) -->
         <div class="user-info" id="userInfo">
             <div class="user-name"><i class="fas fa-user-circle"></i> <span id="userName">User</span></div>
             <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
         </div>
 
-        <div class="add-device-section">
-            <div class="section-title"><i class="fas fa-microchip"></i> Tambah Perangkat ESP32</div>
-            <div class="add-device-form">
-                <input type="text" id="newDeviceName" placeholder="Nama perangkat (contoh: ESP32-01)">
-                <input type="text" id="newDeviceId" placeholder="Unique ID (contoh: esp32_001)">
-                <button onclick="addESP32Device()"><i class="fas fa-plus"></i> Tambah Perangkat</button>
-                <button onclick="showESP32Code()" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);"><i class="fas fa-code"></i> Lihat Kode ESP32</button>
+        <!-- ACCORDION ITEM 1: TAMBAH PERANGKAT -->
+        <div class="accordion-item">
+            <div class="accordion-header" onclick="toggleAccordion(this)">
+                <span><i class="fas fa-microchip"></i> Tambah Perangkat ESP32</span>
+                <i class="fas fa-chevron-right accordion-icon"></i>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <div class="add-device-form">
+                        <input type="text" id="newDeviceName" placeholder="Nama perangkat (contoh: ESP32-01)">
+                        <input type="text" id="newDeviceId" placeholder="Unique ID (contoh: esp32_001)">
+                        <button onclick="addESP32Device()"><i class="fas fa-plus"></i> Tambah Perangkat</button>
+                        <button onclick="showESP32Code()" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);"><i class="fas fa-code"></i> Lihat Kode ESP32</button>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="device-search">
-            <input type="text" id="searchDevice" placeholder="Cari perangkat...">
+        <!-- ACCORDION ITEM 2: DAFTAR PERANGKAT (DEFAULT TERBUKA) -->
+        <div class="accordion-item">
+            <div class="accordion-header active" onclick="toggleAccordion(this)">
+                <span><i class="fas fa-list"></i> Daftar Perangkat</span>
+                <i class="fas fa-chevron-right accordion-icon"></i>
+            </div>
+            <div class="accordion-content show">
+                <div class="accordion-content-inner">
+                    <div class="device-search">
+                        <input type="text" id="searchDevice" placeholder="Cari perangkat...">
+                    </div>
+                    <div class="device-list" id="deviceList">
+                        <div style="text-align: center; padding: 20px;">Memuat perangkat...</div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="device-list" id="deviceList">
-            <div style="text-align: center; padding: 20px;">Memuat perangkat...</div>
-        </div>
-        
-        <div class="saved-geofences-section">
-            <div class="saved-geofences-title">
-                <i class="fas fa-draw-polygon"></i> Geofence Tersimpan 
-                <button class="save-geo-btn" onclick="saveAllGeofencesToStorage()" style="float: right;">💾 Simpan Semua</button>
+        <!-- ACCORDION ITEM 3: GEOFENCE -->
+        <div class="accordion-item">
+            <div class="accordion-header" onclick="toggleAccordion(this)">
+                <span><i class="fas fa-draw-polygon"></i> Geofence Tersimpan</span>
+                <i class="fas fa-chevron-right accordion-icon"></i>
             </div>
-            <div id="savedGeofenceList" class="saved-geofence-list">
-                <div style="text-align: center; padding: 10px; color: rgba(255,255,255,0.5);">Belum ada geofence tersimpan</div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <div style="margin-bottom: 10px; text-align: right;">
+                        <button class="save-geo-btn" onclick="saveAllGeofencesToStorage()"><i class="fas fa-save"></i> Simpan Semua</button>
+                    </div>
+                    <div id="savedGeofenceList" class="saved-geofence-list">
+                        <div style="text-align: center; padding: 10px; color: rgba(255,255,255,0.5);">Belum ada geofence tersimpan</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -965,7 +1020,7 @@
     <div class="main-content">
         <div id="map"></div>
 
-        <div class="ws-indicator" id="wsIndicator" onclick="showWSSettings()">
+        <div class="ws-indicator" id="wsIndicator" onclick="showCloudSettings()">
             <div class="ws-led disconnected" id="wsLed"></div>
             <div><i class="fas fa-cloud-upload-alt" style="margin-right: 5px;"></i><span id="wsText">Cloud: Offline</span></div>
         </div>
@@ -1077,11 +1132,11 @@
     </div>
 </div>
 
-<!-- Modal Pengaturan Cloud -->
+<!-- Modal Konfigurasi Cloud -->
 <div id="cloudModal" class="modal">
     <div class="modal-content">
         <h3><i class="fas fa-cloud-upload-alt"></i> Konfigurasi Cloud Database</h3>
-        <p>Masukkan URL dan Key Supabase Anda</p>
+        <p>Masukkan URL dan Key Supabase Anda untuk menyimpan data secara online</p>
         <input type="text" id="supabaseUrl" placeholder="https://xxxxx.supabase.co" style="width:100%; padding:10px; margin:10px 0; border-radius:8px; border:none; background:rgba(255,255,255,0.1); color:white;">
         <input type="text" id="supabaseKey" placeholder="anon public key" style="width:100%; padding:10px; margin:10px 0; border-radius:8px; border:none; background:rgba(255,255,255,0.1); color:white;">
         <button class="confirm-delete-btn" onclick="saveCloudConfig()" style="background:#667eea;">Simpan</button>
@@ -1122,6 +1177,29 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
+    // ==================== FUNGSI ACCORDION ====================
+    function toggleAccordion(element) {
+        element.classList.toggle('active');
+        const content = element.nextElementSibling;
+        content.classList.toggle('show');
+        
+        if (content.classList.contains('show')) {
+            content.style.maxHeight = content.scrollHeight + "px";
+        } else {
+            content.style.maxHeight = "0px";
+        }
+    }
+    
+    // Buka accordion default (Daftar Perangkat)
+    document.addEventListener('DOMContentLoaded', function() {
+        const defaultOpen = document.querySelector('.accordion-header.active');
+        if (defaultOpen) {
+            const content = defaultOpen.nextElementSibling;
+            content.classList.add('show');
+            content.style.maxHeight = content.scrollHeight + "px";
+        }
+    });
+    
     // ==================== KONFIGURASI ====================
     const STORAGE_CURRENT_USER = 'fleet_current_user';
     const STORAGE_PREFIX = 'fleet_user_';
@@ -1136,15 +1214,14 @@
     let deviceToDelete = null;
     let notificationPermissionGranted = false;
     
-    // Supabase
-    let supabase = null;
-    let cloudConnected = false;
-    
     // Device status
     let deviceSolenoidStatus = new Map();
     let deviceMode = new Map();
     let lastZoneStatus = new Map();
-    let lastFuelLevel = new Map();
+    
+    // Supabase
+    let supabase = null;
+    let cloudConnected = false;
     
     // ==================== SUPABASE CLOUD ====================
     
@@ -1164,7 +1241,7 @@
             localStorage.setItem(CLOUD_CONFIG_KEY, JSON.stringify({ url, key }));
             initSupabase();
             closeCloudModal();
-            showAlert('Konfigurasi cloud disimpan!', 'success');
+            showAlert('Konfigurasi cloud disimpan! Data akan tersimpan online.', 'success');
         } else {
             showAlert('URL dan Key harus diisi!', 'warning');
         }
@@ -1198,6 +1275,7 @@
         const config = getCloudConfig();
         if (!config.url || !config.key) {
             updateCloudIndicator(false);
+            console.log('Supabase not configured');
             return false;
         }
         
@@ -1221,7 +1299,21 @@
         }
     }
     
-    // ==================== DATABASE OPERATIONS ====================
+    // ==================== LOAD DATA FUNCTIONS ====================
+    
+    function getUserStorageKey(baseKey) {
+        if (!currentUser) return baseKey;
+        return `${STORAGE_PREFIX}${currentUser.id}_${baseKey}`;
+    }
+    
+    function saveToLocalStorage(key, data) {
+        localStorage.setItem(getUserStorageKey(key), JSON.stringify(data));
+    }
+    
+    function loadFromLocalStorage(key) {
+        const saved = localStorage.getItem(getUserStorageKey(key));
+        return saved ? JSON.parse(saved) : [];
+    }
     
     async function loadDevicesFromCloud() {
         if (!supabase || !cloudConnected || !currentUser) return [];
@@ -1289,25 +1381,6 @@
             return [];
         }
         return data || [];
-    }
-    
-    async function savePositionToCloud(deviceId, lat, lng, speed) {
-        if (!supabase || !cloudConnected) return false;
-        
-        const { error } = await supabase
-            .from('positions')
-            .insert([{
-                device_id: deviceId,
-                latitude: lat,
-                longitude: lng,
-                speed: speed || 0,
-                timestamp: new Date().toISOString()
-            }]);
-        
-        if (error) {
-            console.error('Error saving position:', error);
-        }
-        return !error;
     }
     
     async function loadGeofencesFromCloud() {
@@ -1395,57 +1468,38 @@
         return true;
     }
     
-    // ==================== NOTIFICATION SYSTEM ====================
-    
-    async function requestNotificationPermission() {
-        if ('Notification' in window) {
-            const permission = await Notification.requestPermission();
-            if (permission === 'granted') {
-                notificationPermissionGranted = true;
-                document.getElementById('notifPermission').style.display = 'none';
-                showAlert('Notifikasi diaktifkan!', 'success');
-                new Notification('✅ Notifikasi Aktif', {
-                    body: 'Sistem akan mengirimkan peringatan jika kendaraan keluar zona',
-                    icon: 'https://cdn-icons-png.flaticon.com/512/744/744465.png'
-                });
-            }
-        }
-    }
-    
-    function sendNotification(title, body) {
-        if (Notification.permission === 'granted') {
-            new Notification(title, { body, icon: 'https://cdn-icons-png.flaticon.com/512/744/744465.png' });
-        }
-    }
-    
-    // ==================== FUNGSI STORAGE LOKAL (BACKUP) ====================
-    
-    function getUserStorageKey(baseKey) {
-        if (!currentUser) return baseKey;
-        return `${STORAGE_PREFIX}${currentUser.id}_${baseKey}`;
-    }
-    
-    function saveToLocalStorage(key, data) {
-        localStorage.setItem(getUserStorageKey(key), JSON.stringify(data));
-    }
-    
-    function loadFromLocalStorage(key) {
-        const saved = localStorage.getItem(getUserStorageKey(key));
-        return saved ? JSON.parse(saved) : [];
-    }
-    
-    // ==================== INIT DATA FROM CLOUD ====================
+    // ==================== LOAD ALL DATA ====================
     
     async function loadAllDataFromCloud() {
         if (!cloudConnected) {
             // Fallback ke local storage
             devicesData = loadFromLocalStorage('custom_devices');
-            loadGeofencesFromLocal();
+            
+            const savedGeofences = loadFromLocalStorage('geofences');
+            geofencePolygons.forEach(p => map.removeLayer(p));
+            geofencePolygons = [];
+            if (savedGeofences) {
+                savedGeofences.forEach(geo => {
+                    const points = geo.coordinates.map(p => [p.lat, p.lng]);
+                    const polygon = L.polygon(points, {
+                        color: '#f5576c',
+                        weight: 3,
+                        fillColor: '#f5576c',
+                        fillOpacity: 0.2,
+                        zoneName: geo.name,
+                        geoId: geo.id
+                    }).addTo(map);
+                    geofencePolygons.push(polygon);
+                });
+            }
+            
             renderDeviceList();
+            loadSavedGeofenceList();
+            showAlert('Menggunakan penyimpanan lokal (cloud tidak terhubung)', 'info');
             return;
         }
         
-        // Load devices
+        // Load devices from cloud
         const devices = await loadDevicesFromCloud();
         devicesData = devices.map(d => ({
             id: d.device_id,
@@ -1458,17 +1512,18 @@
             const positions = await loadPositionsFromCloud(device.id, 1);
             if (positions.length > 0) {
                 const lastPos = positions[0];
-                positionsHistory[device.id] = [{
+                if (!positionsHistory[device.id]) positionsHistory[device.id] = [];
+                positionsHistory[device.id].push({
                     lat: lastPos.latitude,
                     lng: lastPos.longitude,
                     time: lastPos.timestamp,
                     speed: lastPos.speed
-                }];
+                });
             }
             await loadSolenoidStatusFromCloud(device.id);
         }
         
-        // Load geofences
+        // Load geofences from cloud
         const geofences = await loadGeofencesFromCloud();
         geofencePolygons.forEach(p => map.removeLayer(p));
         geofencePolygons = [];
@@ -1491,29 +1546,7 @@
         showAlert(`${devicesData.length} perangkat dan ${geofencePolygons.length} geofence dimuat dari cloud`, 'success');
     }
     
-    function loadGeofencesFromLocal() {
-        const saved = loadFromLocalStorage('geofences');
-        geofencePolygons.forEach(p => map.removeLayer(p));
-        geofencePolygons = [];
-        
-        if (saved) {
-            saved.forEach(geo => {
-                const points = geo.coordinates.map(p => [p.lat, p.lng]);
-                const polygon = L.polygon(points, {
-                    color: '#f5576c',
-                    weight: 3,
-                    fillColor: '#f5576c',
-                    fillOpacity: 0.2,
-                    zoneName: geo.name,
-                    geoId: geo.id
-                }).addTo(map);
-                geofencePolygons.push(polygon);
-            });
-        }
-        loadSavedGeofenceList();
-    }
-    
-    // ==================== GEOFENCE ====================
+    // ==================== GEOFENCE FUNCTIONS ====================
     
     function saveAllGeofencesToStorage() {
         if (geofencePolygons.length === 0) {
@@ -1531,18 +1564,18 @@
             };
         });
         
-        // Simpan ke local storage
         saveToLocalStorage('geofences', geofencesData);
         
-        // Simpan ke cloud jika terhubung
         if (cloudConnected && currentUser) {
             geofencesData.forEach(async geo => {
                 await saveGeofenceToCloud(geo.name, geo.coordinates);
             });
+            showAlert(`${geofencePolygons.length} geofence disimpan ke cloud!`, 'success');
+        } else {
+            showAlert(`${geofencePolygons.length} geofence disimpan ke lokal!`, 'success');
         }
         
         loadSavedGeofenceList();
-        showAlert(`${geofencePolygons.length} geofence berhasil disimpan!`, 'success');
     }
     
     function loadSavedGeofenceList() {
@@ -1589,11 +1622,43 @@
         }
     }
     
-    // ==================== FITUR PERANGKAT ====================
+    // ==================== DEVICE MANAGEMENT ====================
+    
+    async function addESP32Device() {
+        const deviceName = document.getElementById('newDeviceName').value.trim();
+        const deviceId = document.getElementById('newDeviceId').value.trim();
+        
+        if (!deviceName || !deviceId) {
+            showAlert('Nama perangkat dan Unique ID harus diisi!', 'warning');
+            return;
+        }
+        
+        if (devicesData.some(d => d.id === deviceId)) {
+            showAlert('Perangkat dengan ID tersebut sudah ada!', 'warning');
+            return;
+        }
+        
+        let cloudSuccess = false;
+        if (cloudConnected) {
+            cloudSuccess = await saveDeviceToCloud(deviceId, deviceName);
+        }
+        
+        let customDevices = loadFromLocalStorage('custom_devices');
+        customDevices.push({ id: deviceId, name: deviceName, isCustom: true });
+        saveToLocalStorage('custom_devices', customDevices);
+        
+        devicesData.push({ id: deviceId, name: deviceName, isCustom: true });
+        
+        document.getElementById('newDeviceName').value = '';
+        document.getElementById('newDeviceId').value = '';
+        
+        renderDeviceList();
+        showAlert(`Perangkat "${deviceName}" berhasil ditambahkan${cloudSuccess ? ' ke cloud!' : '!'}`, 'success');
+    }
     
     function deleteDeviceFromList(deviceId, deviceName, isCustom = false) {
         deviceToDelete = { id: deviceId, name: deviceName, isCustom: isCustom };
-        document.getElementById('confirmMessage').innerHTML = `Apakah Anda yakin ingin menghapus perangkat <strong>${deviceName}</strong>?<br><small style="color: #f87171;">Data akan dihapus dari cloud dan lokal!</small>`;
+        document.getElementById('confirmMessage').innerHTML = `Hapus perangkat "${deviceName}"?`;
         document.getElementById('confirmModal').style.display = 'flex';
     }
     
@@ -1607,17 +1672,14 @@
         
         const { id, name, isCustom } = deviceToDelete;
         
-        // Hapus dari cloud
         if (cloudConnected) {
             await deleteDeviceFromCloud(id);
         }
         
-        // Hapus dari local storage
         let customDevices = loadFromLocalStorage('custom_devices');
         customDevices = customDevices.filter(d => d.id !== id);
         saveToLocalStorage('custom_devices', customDevices);
         
-        // Hapus dari memory
         devicesData = devicesData.filter(d => d.id != id);
         renderDeviceList();
         
@@ -1628,156 +1690,33 @@
             if (devicesData.length > 0) await selectDevice(devicesData[0].id);
         }
         
-        showAlert(`Perangkat "${name}" berhasil dihapus!`, 'success');
+        showAlert(`Perangkat "${name}" dihapus!`, 'success');
         closeConfirmModal();
     }
     
     function trackDevice(deviceId, deviceName) {
         selectDevice(deviceId);
-        showAlert(`Melacak perangkat: ${deviceName}`, 'success');
+        showAlert(`Melacak: ${deviceName}`, 'success');
     }
     
-    // ==================== FITUR TAMBAH PERANGKAT ====================
-    
-    async function addESP32Device() {
-        const deviceName = document.getElementById('newDeviceName').value.trim();
-        const deviceId = document.getElementById('newDeviceId').value.trim();
-        
-        if (!deviceName || !deviceId) {
-            showAlert('Nama perangkat dan Unique ID harus diisi!', 'warning');
-            return;
-        }
-        
-        // Cek duplikat
-        if (devicesData.some(d => d.id === deviceId)) {
-            showAlert('Perangkat dengan ID tersebut sudah ada!', 'warning');
-            return;
-        }
-        
-        // Simpan ke cloud
-        let cloudSuccess = false;
+    async function setDeviceMode(deviceId, mode) {
+        deviceMode.set(deviceId, mode);
         if (cloudConnected) {
-            cloudSuccess = await saveDeviceToCloud(deviceId, deviceName);
+            const currentActive = deviceSolenoidStatus.get(deviceId) || false;
+            await saveSolenoidStatusToCloud(deviceId, currentActive, mode);
         }
-        
-        // Simpan ke local storage
-        let customDevices = loadFromLocalStorage('custom_devices');
-        customDevices.push({ id: deviceId, name: deviceName, isCustom: true });
-        saveToLocalStorage('custom_devices', customDevices);
-        
-        // Tambah ke memory
-        devicesData.push({ id: deviceId, name: deviceName, isCustom: true });
-        
-        document.getElementById('newDeviceName').value = '';
-        document.getElementById('newDeviceId').value = '';
-        
         renderDeviceList();
-        showAlert(`Perangkat "${deviceName}" berhasil ditambahkan${cloudSuccess ? ' ke cloud!' : '!'}`, 'success');
+        showAlert(`Mode ${mode === 'auto' ? 'AUTOMATIS' : 'MANUAL'}`, 'success');
     }
     
-    function showESP32Code() {
-        const wsUrl = window.location.origin;
-        const deviceIdInput = document.getElementById('newDeviceId').value || 'esp32_001';
-        const deviceNameInput = document.getElementById('newDeviceName').value || 'ESP32-Tracker';
-        
-        const esp32Code = `/*
- * ESP32 GPS Tracker with Cloud Database API
- */
-
-#include <WiFi.h>
-#include <HTTPClient.h>
-#include <ArduinoJson.h>
-#include <TinyGPS++.h>
-
-const char* ssid = "YOUR_WIFI_SSID";
-const char* password = "YOUR_WIFI_PASSWORD";
-
-// Ganti dengan URL dashboard Anda
-const char* apiUrl = "${wsUrl}/api/position";
-const char* deviceId = "${deviceIdInput}";
-const char* deviceName = "${deviceNameInput}";
-
-const int SOLENOID_PIN = 13;
-const int LED_PIN = 2;
-
-TinyGPSPlus gps;
-HardwareSerial gpsSerial(2);
-unsigned long lastSend = 0;
-
-void setup() {
-    Serial.begin(115200);
-    pinMode(SOLENOID_PIN, OUTPUT);
-    pinMode(LED_PIN, OUTPUT);
-    gpsSerial.begin(9600, SERIAL_8N1, 16, 17);
-    
-    WiFi.begin(ssid, password);
-    while (WiFi.status() != WL_CONNECTED) { delay(500); Serial.print("."); }
-    Serial.println("\\nWiFi connected!");
-    Serial.print("Device ID: ");
-    Serial.println(deviceId);
-}
-
-void loop() {
-    while (gpsSerial.available() > 0) {
-        gps.encode(gpsSerial.read());
-    }
-    
-    if (gps.location.isValid() && millis() - lastSend > 5000) {
-        sendGPSData();
-        lastSend = millis();
-    }
-    
-    // Kontrol solenoid sederhana (contoh)
-    // digitalWrite(SOLENOID_PIN, HIGH/LOW);
-    
-    delay(10);
-}
-
-void sendGPSData() {
-    HTTPClient http;
-    http.begin(apiUrl);
-    http.addHeader("Content-Type", "application/json");
-    
-    StaticJsonDocument<256> doc;
-    doc["deviceId"] = deviceId;
-    doc["deviceName"] = deviceName;
-    doc["latitude"] = gps.location.lat();
-    doc["longitude"] = gps.location.lng();
-    doc["speed"] = gps.speed.kmph();
-    doc["altitude"] = gps.altitude.meters();
-    doc["course"] = gps.course.deg();
-    doc["satellites"] = gps.satellites.value();
-    
-    String body;
-    serializeJson(doc, body);
-    
-    int httpCode = http.POST(body);
-    
-    if (httpCode > 0) {
-        Serial.print("Data sent: ");
-        Serial.print(gps.location.lat(), 6);
-        Serial.print(", ");
-        Serial.println(gps.location.lng(), 6);
-    } else {
-        Serial.print("Error sending: ");
-        Serial.println(httpCode);
-    }
-    
-    http.end();
-}`;
-        
-        document.getElementById('esp32CodeBlock').innerHTML = esp32Code.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        document.getElementById('esp32Modal').style.display = 'flex';
-    }
-    
-    function closeESP32Modal() {
-        document.getElementById('esp32Modal').style.display = 'none';
-    }
-    
-    function copyESP32Code() {
-        const codeBlock = document.getElementById('esp32CodeBlock');
-        navigator.clipboard.writeText(codeBlock.innerText);
-        showAlert('Kode ESP32 berhasil disalin!', 'success');
+    function sendManualSolenoidCommand(deviceId, activate) {
+        deviceSolenoidStatus.set(deviceId, activate);
+        if (cloudConnected) {
+            const mode = deviceMode.get(deviceId) || 'auto';
+            saveSolenoidStatusToCloud(deviceId, activate, mode);
+        }
+        renderDeviceList();
+        showAlert(`Solenoid ${activate ? 'AKTIF' : 'NONAKTIF'}`, 'success');
     }
     
     // ==================== RENDER DEVICE LIST ====================
@@ -1797,7 +1736,7 @@ void sendGPSData() {
             const pos = positionsHistory[device.id]?.[0];
             const isOnline = pos && (Date.now() - new Date(pos.time).getTime() < 60000);
             const battery = 75;
-            const isCustom = device.isCustom ? '<span style="font-size:0.6rem; background:#4ade80; color:#1a1a2e; padding:2px 5px; border-radius:4px; margin-left:5px;">ESP32</span>' : '';
+            const isCustom = device.isCustom ? '<span style="background:#4ade80; color:#1a1a2e; padding:2px 5px; border-radius:4px; font-size:0.6rem;">ESP32</span>' : '';
             const solenoidActive = deviceSolenoidStatus.get(device.id) || false;
             const currentModeVal = deviceMode.get(device.id) || 'auto';
             const historyCount = positionsHistory[device.id]?.length || 0;
@@ -1805,15 +1744,11 @@ void sendGPSData() {
             html += `
                 <div class="device-item ${currentDevice?.id === device.id ? 'active' : ''}" onclick="selectDevice('${device.id}')">
                     <div class="device-actions">
-                        <button class="device-action-btn track-btn" onclick="event.stopPropagation(); trackDevice('${device.id}', '${device.name.replace(/'/g, "\\'")}')" title="Lacak Perangkat">
-                            <i class="fas fa-location-dot"></i>
-                        </button>
-                        <button class="device-action-btn delete-btn" onclick="event.stopPropagation(); deleteDeviceFromList('${device.id}', '${device.name.replace(/'/g, "\\'")}', ${device.isCustom || false})" title="Hapus Perangkat">
-                            <i class="fas fa-trash-alt"></i>
-                        </button>
+                        <button class="device-action-btn track-btn" onclick="event.stopPropagation(); trackDevice('${device.id}', '${device.name.replace(/'/g, "\\'")}')"><i class="fas fa-location-dot"></i></button>
+                        <button class="device-action-btn delete-btn" onclick="event.stopPropagation(); deleteDeviceFromList('${device.id}', '${device.name.replace(/'/g, "\\'")}', ${device.isCustom || false})"><i class="fas fa-trash"></i></button>
                     </div>
                     <div class="device-name">
-                        <span><i class="fas fa-car"></i> ${device.name || device.id} ${isCustom}</span>
+                        <span><i class="fas fa-car"></i> ${device.name} ${isCustom}</span>
                         <span class="status-badge">
                             <i class="fas fa-circle ${isOnline ? 'status-online' : 'status-offline'}"></i>
                             ${isOnline ? 'Online' : 'Offline'}
@@ -1826,7 +1761,7 @@ void sendGPSData() {
                             </span>
                         </span>
                     </div>
-                    <div class="battery-bar"><div class="battery-fill" style="width:${battery}%;background:${battery>20?'#4ade80':'#f87171'}"></div></div>
+                    <div class="battery-bar"><div class="battery-fill" style="width:${battery}%"></div></div>
                     <div class="device-info">
                         <span><i class="fas fa-tachometer-alt"></i> ${pos?.speed || 0} km/h</span>
                         <span><i class="fas fa-history"></i> ${historyCount} rekaman</span>
@@ -1846,26 +1781,6 @@ void sendGPSData() {
             `;
         });
         container.innerHTML = html;
-    }
-    
-    async function setDeviceMode(deviceId, mode) {
-        deviceMode.set(deviceId, mode);
-        if (cloudConnected) {
-            const currentActive = deviceSolenoidStatus.get(deviceId) || false;
-            await saveSolenoidStatusToCloud(deviceId, currentActive, mode);
-        }
-        renderDeviceList();
-        showAlert(`Mode ${mode === 'auto' ? 'AUTOMATIS' : 'MANUAL'} untuk ${deviceId}`, 'success');
-    }
-    
-    function sendManualSolenoidCommand(deviceId, activate) {
-        deviceSolenoidStatus.set(deviceId, activate);
-        if (cloudConnected) {
-            const mode = deviceMode.get(deviceId) || 'auto';
-            saveSolenoidStatusToCloud(deviceId, activate, mode);
-        }
-        renderDeviceList();
-        showAlert(`Solenoid ${activate ? 'AKTIF' : 'NONAKTIF'} untuk ${deviceId}`, 'success');
     }
     
     // ==================== ZONE & MAP ====================
@@ -1890,7 +1805,7 @@ void sendGPSData() {
             zoneStatusDiv.className = 'zone-status no-zone';
             zoneStatusText.innerHTML = 'TIDAK ADA ZONA';
             zoneNameInfo.innerHTML = '';
-            return { status: 'no-zone', message: 'TIDAK ADA ZONA', zones: [] };
+            return;
         }
         
         let insideZones = [];
@@ -1908,33 +1823,21 @@ void sendGPSData() {
             if (currentMode === 'auto' && deviceSolenoidStatus.get(deviceId) === true) {
                 sendManualSolenoidCommand(deviceId, false);
             }
-            if (lastZoneStatus.get(deviceId) === false && currentMode === 'auto') {
-                sendNotification('✅ Kembali ke Zona', `Perangkat kembali ke dalam zona geofence`);
-            }
-            lastZoneStatus.set(deviceId, true);
-            return { status: 'in-zone', message: 'DI DALAM ZONA', zones: insideZones };
         } else {
             zoneStatusDiv.className = 'zone-status out-zone';
             zoneStatusText.innerHTML = 'KELUAR ZONA!';
-            zoneNameInfo.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Luar semua zona`;
+            zoneNameInfo.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Luar zona`;
             const currentMode = deviceMode.get(deviceId) || 'auto';
             if (currentMode === 'auto' && deviceSolenoidStatus.get(deviceId) !== true && geofencePolygons.length > 0) {
                 sendManualSolenoidCommand(deviceId, true);
-                if (lastZoneStatus.get(deviceId) !== false) {
-                    sendNotification('⚠️ PERINGATAN!', `Kendaraan keluar dari zona geofence! Solenoid AKTIF.`);
-                }
-                showAlert('⚠️ PERINGATAN: Kendaraan berada DI LUAR zona geofence! Solenoid AKTIF!', 'warning');
+                showAlert('⚠️ Kendaraan keluar zona! Solenoid AKTIF!', 'warning');
             }
-            lastZoneStatus.set(deviceId, false);
-            return { status: 'out-zone', message: 'KELUAR ZONA!', zones: [] };
         }
     }
     
     function updateTelemetry(pos) {
         if (pos) {
-            document.getElementById('speedValue').innerHTML = `${pos?.speed || 0} km/h`;
-            document.getElementById('odometerValue').innerHTML = `0 km`;
-            document.getElementById('accStatus').innerHTML = 'OFF';
+            document.getElementById('speedValue').innerHTML = `${pos.speed || 0} km/h`;
         }
     }
     
@@ -1950,24 +1853,37 @@ void sendGPSData() {
         currentDevice = devicesData.find(d => d.id == deviceId);
         const pos = positionsHistory[deviceId]?.[0];
         
-        if (pos) {
-            const coords = [pos.lat, pos.lng];
+        if (cloudConnected && (!positionsHistory[deviceId] || positionsHistory[deviceId].length < 2)) {
+            const cloudPositions = await loadPositionsFromCloud(deviceId, 500);
+            if (cloudPositions.length > 0) {
+                positionsHistory[deviceId] = cloudPositions.map(p => ({
+                    lat: p.latitude,
+                    lng: p.longitude,
+                    time: p.timestamp,
+                    speed: p.speed
+                }));
+            }
+        }
+        
+        const historyPos = positionsHistory[deviceId]?.[0];
+        
+        if (historyPos) {
+            const coords = [historyPos.lat, historyPos.lng];
             if (currentMarker) currentMarker.setLatLng(coords);
             else currentMarker = L.marker(coords, { icon: vehicleIcon }).addTo(map);
-            currentMarker.bindPopup(`<b>${currentDevice.name}</b><br>📍 ${pos.lat.toFixed(6)}, ${pos.lng.toFixed(6)}<br>🕐 ${new Date(pos.time).toLocaleString()}<br>🎮 Mode: ${deviceMode.get(deviceId) || 'AUTO'}`).openPopup();
+            currentMarker.bindPopup(`<b>${currentDevice.name}</b><br>📍 ${historyPos.lat.toFixed(6)}, ${historyPos.lng.toFixed(6)}`).openPopup();
             map.setView(coords, 14);
-            updateTelemetry(pos);
-            checkZoneStatus(pos.lat, pos.lng, deviceId);
-        } else if (currentDevice?.isCustom) {
-            showAlert(`Perangkat "${currentDevice.name}" sudah terdaftar. Tunggu data masuk.`, 'info');
+            updateTelemetry({ speed: historyPos.speed });
+            checkZoneStatus(historyPos.lat, historyPos.lng, deviceId);
         }
         renderDeviceList();
     }
     
+    // ==================== PLAYBACK ====================
+    
     async function initPlayback(deviceId) {
         let history = positionsHistory[deviceId] || [];
         
-        // If cloud connected and history is empty, try load from cloud
         if (cloudConnected && history.length === 0) {
             const cloudHistory = await loadPositionsFromCloud(deviceId, 500);
             history = cloudHistory.map(p => ({
@@ -1980,7 +1896,7 @@ void sendGPSData() {
         }
         
         if (!history || history.length < 2) {
-            showAlert('Riwayat tidak tersedia! Minimal 2 titik.', 'warning');
+            showAlert('Riwayat tidak tersedia!', 'warning');
             return;
         }
         
@@ -2033,7 +1949,22 @@ void sendGPSData() {
         checkZoneStatus(pos.lat, pos.lng, currentDevice?.id);
     }
     
-    // ==================== INIT MAP & GEOFENCE ====================
+    // ==================== FUEL DISPLAY FAKE ====================
+    function updateFuelDisplay() {
+        const mockLevel = Math.floor(Math.random() * 100);
+        document.getElementById('fuelLevel').innerHTML = `${mockLevel}%`;
+        document.getElementById('flowRate').innerHTML = `${(Math.random() * 10).toFixed(2)} L/min`;
+        document.getElementById('fuelUsed').innerHTML = `${(Math.random() * 200).toFixed(2)} L`;
+        document.getElementById('estimatedRange').innerHTML = `${Math.floor(mockLevel * 5)} km`;
+        
+        const progressFill = document.getElementById('fuelProgressFill');
+        progressFill.style.width = `${mockLevel}%`;
+        if (mockLevel < 20) progressFill.className = 'fuel-progress-fill low';
+        else if (mockLevel < 50) progressFill.className = 'fuel-progress-fill medium';
+        else progressFill.className = 'fuel-progress-fill high';
+    }
+    
+    // ==================== MAP INIT ====================
     
     function initMap() {
         map = L.map('map').setView([-6.2088, 106.8456], 13);
@@ -2045,7 +1976,6 @@ void sendGPSData() {
             iconSize: [40, 40], iconAnchor: [20, 20]
         });
         
-        // Geofence drawing tools
         const drawBtn = document.getElementById('drawPolygonBtnRight');
         const clearBtn = document.getElementById('clearGeofenceBtnRight');
         
@@ -2057,15 +1987,8 @@ void sendGPSData() {
             } else {
                 drawControl = new L.Control.Draw({
                     draw: {
-                        polygon: {
-                            allowIntersection: false,
-                            shapeOptions: { color: '#f5576c', weight: 3 }
-                        },
-                        polyline: false,
-                        marker: false,
-                        circle: false,
-                        rectangle: false,
-                        circlemarker: false
+                        polygon: { allowIntersection: false, shapeOptions: { color: '#f5576c', weight: 3 } },
+                        polyline: false, marker: false, circle: false, rectangle: false
                     },
                     edit: false
                 });
@@ -2088,7 +2011,7 @@ void sendGPSData() {
                         geoId: geoId
                     }).addTo(map);
                     
-                    poly.bindPopup(`<b>${zoneName || 'Zona'}</b><br>Geofence baru<br>Klik kanan untuk hapus`);
+                    poly.bindPopup(`<b>${zoneName || 'Zona'}</b><br>Klik kanan hapus`);
                     poly.on('contextmenu', () => {
                         map.removeLayer(poly);
                         geofencePolygons = geofencePolygons.filter(p => p !== poly);
@@ -2108,7 +2031,7 @@ void sendGPSData() {
         };
         
         clearBtn.onclick = () => {
-            if (confirm('Hapus semua geofence dari peta? (Data tersimpan tidak akan terhapus)')) {
+            if (confirm('Hapus semua geofence dari peta?')) {
                 geofencePolygons.forEach(p => map.removeLayer(p));
                 geofencePolygons = [];
                 loadSavedGeofenceList();
@@ -2117,25 +2040,114 @@ void sendGPSData() {
         };
     }
     
+    // ==================== NOTIFICATION ====================
+    
+    async function requestNotificationPermission() {
+        if ('Notification' in window) {
+            const permission = await Notification.requestPermission();
+            if (permission === 'granted') {
+                notificationPermissionGranted = true;
+                document.getElementById('notifPermission').style.display = 'none';
+                showAlert('Notifikasi diaktifkan!', 'success');
+            }
+        }
+    }
+    
+    function showESP32Code() {
+        const deviceIdInput = document.getElementById('newDeviceId').value || 'esp32_001';
+        const deviceNameInput = document.getElementById('newDeviceName').value || 'ESP32-Tracker';
+        
+        const esp32Code = `/*
+ * ESP32 GPS Tracker with Cloud Database
+ */
+
+#include <WiFi.h>
+#include <HTTPClient.h>
+#include <ArduinoJson.h>
+#include <TinyGPS++.h>
+
+const char* ssid = "YOUR_WIFI_SSID";
+const char* password = "YOUR_WIFI_PASSWORD";
+const char* apiUrl = "https://YOUR_VERCEL_URL.vercel.app/api/position";
+const char* deviceId = "${deviceIdInput}";
+
+const int SOLENOID_PIN = 13;
+const int LED_PIN = 2;
+
+TinyGPSPlus gps;
+HardwareSerial gpsSerial(2);
+unsigned long lastSend = 0;
+
+void setup() {
+    Serial.begin(115200);
+    pinMode(SOLENOID_PIN, OUTPUT);
+    pinMode(LED_PIN, OUTPUT);
+    gpsSerial.begin(9600, SERIAL_8N1, 16, 17);
+    
+    WiFi.begin(ssid, password);
+    while (WiFi.status() != WL_CONNECTED) { delay(500); Serial.print("."); }
+    Serial.println("\\nWiFi connected!");
+}
+
+void loop() {
+    while (gpsSerial.available() > 0) gps.encode(gpsSerial.read());
+    
+    if (gps.location.isValid() && millis() - lastSend > 5000) {
+        sendGPSData();
+        lastSend = millis();
+    }
+    delay(10);
+}
+
+void sendGPSData() {
+    HTTPClient http;
+    http.begin(apiUrl);
+    http.addHeader("Content-Type", "application/json");
+    
+    StaticJsonDocument<200> doc;
+    doc["deviceId"] = deviceId;
+    doc["latitude"] = gps.location.lat();
+    doc["longitude"] = gps.location.lng();
+    doc["speed"] = gps.speed.kmph();
+    
+    String body;
+    serializeJson(doc, body);
+    http.POST(body);
+    http.end();
+}`;
+        
+        document.getElementById('esp32CodeBlock').innerHTML = esp32Code.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        document.getElementById('esp32Modal').style.display = 'flex';
+    }
+    
+    function closeESP32Modal() {
+        document.getElementById('esp32Modal').style.display = 'none';
+    }
+    
+    function copyESP32Code() {
+        navigator.clipboard.writeText(document.getElementById('esp32CodeBlock').innerText);
+        showAlert('Kode disalin!', 'success');
+    }
+    
     // ==================== AUTH & INIT ====================
     
     function checkAuth() {
-        const currentUserData = localStorage.getItem(STORAGE_CURRENT_USER);
-        if (!currentUserData) {
+        const userData = localStorage.getItem(STORAGE_CURRENT_USER);
+        if (!userData) {
             window.location.href = 'index.html';
         } else {
-            currentUser = JSON.parse(currentUserData);
+            currentUser = JSON.parse(userData);
             document.getElementById('userName').innerHTML = currentUser.name || currentUser.username;
+            if (Notification.permission === 'granted') {
+                notificationPermissionGranted = true;
+                document.getElementById('notifPermission').style.display = 'none';
+            }
         }
     }
     
     function logout() {
         localStorage.removeItem(STORAGE_CURRENT_USER);
         window.location.href = 'index.html';
-    }
-    
-    function showWSSettings() {
-        showCloudSettings();
     }
     
     function initResponsive() {
@@ -2149,48 +2161,17 @@ void sendGPSData() {
         }
     }
     
-    // ==================== MOCK DATA FOR FUEL DISPLAY ====================
-    function updateFuelDisplay() {
-        // Mock data - dalam implementasi sebenarnya dari ESP32
-        const mockLevel = Math.floor(Math.random() * 100);
-        document.getElementById('fuelLevel').innerHTML = `${mockLevel}%`;
-        document.getElementById('flowRate').innerHTML = `${(Math.random() * 10).toFixed(2)} L/min`;
-        document.getElementById('fuelUsed').innerHTML = `${(Math.random() * 200).toFixed(2)} L`;
-        document.getElementById('estimatedRange').innerHTML = `${Math.floor(mockLevel * 5)} km`;
-        
-        const progressFill = document.getElementById('fuelProgressFill');
-        progressFill.style.width = `${mockLevel}%`;
-        if (mockLevel < 20) progressFill.className = 'fuel-progress-fill low';
-        else if (mockLevel < 50) progressFill.className = 'fuel-progress-fill medium';
-        else progressFill.className = 'fuel-progress-fill high';
-    }
-    
     async function init() {
         checkAuth();
         initMap();
         initResponsive();
         
-        // Initialize cloud connection
         await initSupabase();
-        
-        // Load data from cloud or local
         await loadAllDataFromCloud();
         
-        // Simulate real-time fuel data (for demo)
         setInterval(updateFuelDisplay, 5000);
+        setInterval(async () => { await loadAllDataFromCloud(); }, 10000);
         
-        // Auto refresh devices every 10 seconds
-        setInterval(async () => {
-            await loadAllDataFromCloud();
-        }, 10000);
-        
-        // Check notification permission
-        if (Notification.permission === 'granted') {
-            notificationPermissionGranted = true;
-            document.getElementById('notifPermission').style.display = 'none';
-        }
-        
-        // Add playback button to popup
         setTimeout(() => {
             if(currentMarker) currentMarker.on('popupopen', () => {
                 if(!document.querySelector('.playback-btn')){
