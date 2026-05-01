@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>GPS Fleet Dashboard - Real-time GPS Telemetry</title>
+    <title>GPS Fleet Dashboard - Supabase Integration</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* ========== CSS UTAMA ========== */
         * {
             margin: 0;
             padding: 0;
@@ -39,7 +39,6 @@
             z-index: 2;
         }
 
-        /* ========== SIDEBAR ========== */
         .sidebar {
             width: 320px;
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
@@ -96,7 +95,6 @@
             background: #f87171;
         }
 
-        /* ========== ACCORDION STYLES ========== */
         .accordion-item {
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
@@ -144,44 +142,6 @@
             padding: 10px 15px 15px 40px;
         }
 
-        /* ========== FORM TAMBAH PERANGKAT ========== */
-        .add-device-form {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .add-device-form input {
-            padding: 8px 12px;
-            border: none;
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.15);
-            color: white;
-            outline: none;
-            font-size: 0.8rem;
-        }
-
-        .add-device-form input::placeholder {
-            color: rgba(255, 255, 255, 0.5);
-        }
-
-        .add-device-form button {
-            padding: 8px;
-            background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
-            border: none;
-            border-radius: 8px;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .add-device-form button:hover {
-            transform: translateY(-2px);
-            opacity: 0.9;
-        }
-
-        /* ========== SEARCH DEVICE ========== */
         .device-search {
             padding: 0 0 10px 0;
         }
@@ -201,7 +161,6 @@
             color: rgba(255, 255, 255, 0.5);
         }
 
-        /* ========== DEVICE LIST ========== */
         .device-list {
             max-height: 280px;
             overflow-y: auto;
@@ -278,7 +237,6 @@
             justify-content: space-between;
         }
 
-        /* ========== DEVICE ACTIONS (HOVER) ========== */
         .device-actions {
             position: absolute;
             top: 10px;
@@ -319,560 +277,42 @@
             transform: scale(1.05);
         }
 
-        /* ========== MODE SWITCH ========== */
-        .mode-switch {
+        .add-device-form {
             display: flex;
-            align-items: center;
-            gap: 10px;
-            background: rgba(0, 0, 0, 0.4);
-            padding: 5px 10px;
-            border-radius: 30px;
-            margin-top: 8px;
+            flex-direction: column;
+            gap: 8px;
         }
 
-        .mode-label {
-            font-size: 0.65rem;
-            opacity: 0.8;
-        }
-
-        .mode-toggle {
-            display: flex;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 30px;
-            padding: 2px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .mode-option {
-            padding: 3px 12px;
-            font-size: 0.65rem;
-            border-radius: 30px;
-            transition: all 0.3s;
-            font-weight: bold;
-        }
-
-        .mode-option.active {
-            background: #667eea;
-            color: white;
-        }
-
-        /* ========== SOLENOID BUTTONS ========== */
-        .solenoid-manual-btn {
-            background: rgba(0, 0, 0, 0.5);
+        .add-device-form input {
+            padding: 8px 12px;
             border: none;
-            color: white;
-            padding: 4px 8px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.65rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            margin-top: 5px;
-            margin-right: 5px;
-            transition: all 0.2s;
-        }
-
-        .solenoid-manual-btn.on {
-            background: #f87171;
-        }
-
-        .solenoid-manual-btn.off {
-            background: #4ade80;
-            color: #1a1a2e;
-        }
-
-        .solenoid-manual-btn.on:hover {
-            background: #ef4444;
-        }
-
-        .solenoid-manual-btn.off:hover {
-            background: #22c55e;
-        }
-
-        .solenoid-manual-btn.disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        /* ========== BADGES ========== */
-        .solenoid-status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            font-size: 0.6rem;
-            padding: 2px 6px;
-            border-radius: 10px;
-            margin-left: 5px;
-        }
-
-        .solenoid-status-badge.active {
-            background: #f87171;
-            color: white;
-        }
-
-        .solenoid-status-badge.inactive {
-            background: #4ade80;
-            color: #1a1a2e;
-        }
-
-        .mode-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            font-size: 0.6rem;
-            padding: 2px 6px;
-            border-radius: 10px;
-            margin-left: 5px;
-            background: #667eea;
-        }
-
-        /* ========== GEOFENCE LIST ========== */
-        .saved-geofences-section {
-            margin-top: 5px;
-        }
-
-        .saved-geofences-title {
-            font-size: 0.8rem;
-            font-weight: bold;
-            margin-bottom: 10px;
-            color: rgba(255, 255, 255, 0.8);
-        }
-
-        .saved-geofence-list {
-            max-height: 200px;
-            overflow-y: auto;
-        }
-
-        .saved-geofence-item {
-            background: rgba(255, 255, 255, 0.08);
             border-radius: 8px;
-            padding: 8px;
-            margin-bottom: 8px;
-            font-size: 0.75rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .saved-geofence-item:hover {
             background: rgba(255, 255, 255, 0.15);
-            transform: translateX(3px);
-        }
-
-        .delete-geo-btn {
-            background: #f87171;
-            border: none;
             color: white;
-            padding: 2px 8px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.7rem;
-        }
-
-        .save-geo-btn {
-            background: #4ade80;
-            border: none;
-            color: #1a1a2e;
-            padding: 2px 8px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.7rem;
-            margin-left: 5px;
-        }
-
-        /* ========== MAIN CONTENT ========== */
-        .main-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-        }
-
-        /* ========== TELEMETRY PANEL ========== */
-        .telemetry-panel {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            background: rgba(0, 0, 0, 0.85);
-            backdrop-filter: blur(15px);
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 12px 20px;
-            display: none;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
-            transform: translateY(100%);
-            transition: transform 0.3s ease;
-        }
-
-        .telemetry-panel.show {
-            display: flex;
-            transform: translateY(0);
-        }
-
-        .telemetry-section {
-            display: flex;
-            gap: 25px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .telemetry-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 8px 16px;
-            border-radius: 12px;
-        }
-
-        .telemetry-item i {
-            font-size: 1.2rem;
-            opacity: 0.8;
-            color: #667eea;
-        }
-
-        .telemetry-info {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .telemetry-label {
-            font-size: 0.65rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            opacity: 0.6;
-            color: white;
-        }
-
-        .telemetry-value {
-            font-size: 1.1rem;
-            font-weight: bold;
-            color: white;
-            font-family: monospace;
-        }
-
-        /* ========== FUEL SECTION ========== */
-        .fuel-section {
-            display: flex;
-            gap: 25px;
-            align-items: center;
-            flex-wrap: wrap;
-            background: rgba(0, 0, 0, 0.3);
-            padding: 5px 15px;
-            border-radius: 12px;
-        }
-
-        .fuel-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 5px 12px;
-            border-radius: 10px;
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .fuel-progress {
-            width: 80px;
-            height: 6px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 3px;
-            overflow: hidden;
-        }
-
-        .fuel-progress-fill {
-            height: 100%;
-            background: #fbbf24;
-            border-radius: 3px;
-            transition: width 0.3s;
-        }
-
-        .fuel-progress-fill.low {
-            background: #f87171;
-        }
-
-        .fuel-progress-fill.medium {
-            background: #fbbf24;
-        }
-
-        .fuel-progress-fill.high {
-            background: #4ade80;
-        }
-
-        /* ========== ZONE STATUS ========== */
-        .zone-status-section {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 8px 20px;
-            border-radius: 40px;
-        }
-
-        .zone-label {
-            font-size: 0.75rem;
-            color: rgba(255, 255, 255, 0.7);
-            letter-spacing: 1px;
-        }
-
-        .zone-status {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: bold;
-        }
-
-        .zone-status.in-zone {
-            color: #4ade80;
-        }
-
-        .zone-status.out-zone {
-            color: #f87171;
-            animation: pulse 1s infinite;
-        }
-
-        .zone-status.no-zone {
-            color: #a0aec0;
-        }
-
-        .zone-name {
-            font-size: 0.85rem;
-            font-family: monospace;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.6; }
-        }
-
-        /* ========== PLAYBACK PANEL ========== */
-        .playback-panel {
-            position: absolute;
-            bottom: 80px;
-            left: 20px;
-            right: 20px;
-            z-index: 1000;
-            background: rgba(0, 0, 0, 0.9);
-            backdrop-filter: blur(10px);
-            border-radius: 16px;
-            padding: 15px 20px;
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            display: none;
-        }
-
-        .playback-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-
-        .playback-controls {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-        }
-
-        .playback-controls button {
-            background: none;
-            border: none;
-            color: white;
-            cursor: pointer;
-            font-size: 1.2rem;
-            padding: 5px;
-            transition: all 0.2s;
-        }
-
-        .playback-controls button:hover {
-            transform: scale(1.1);
-            color: #667eea;
-        }
-
-        .playback-slider {
-            flex: 1;
-            margin: 0 15px;
-        }
-
-        input[type="range"] {
-            width: 100%;
-            height: 4px;
-            -webkit-appearance: none;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 2px;
             outline: none;
+            font-size: 0.8rem;
         }
 
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 16px;
-            height: 16px;
-            background: #667eea;
-            border-radius: 50%;
-            cursor: pointer;
+        .add-device-form input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
         }
 
-        /* ========== ALERT TOAST ========== */
-        .alert-toast {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 10001;
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            color: white;
-            padding: 12px 20px;
-            border-radius: 12px;
-            display: none;
-            align-items: center;
-            gap: 10px;
-            animation: slideInRight 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            max-width: 350px;
-            min-width: 250px;
-        }
-
-        .alert-toast.success {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-        }
-
-        .alert-toast.warning {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        }
-
-        .alert-toast.info {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-
-        @keyframes slideInRight {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        /* ========== GEOFENCE TOOLS ========== */
-        .geofence-tools-right {
-            position: fixed;
-            bottom: 100px;
-            right: 20px;
-            z-index: 10000;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .geo-btn-right {
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            width: 45px;
-            height: 45px;
-            border-radius: 12px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-        }
-
-        .geo-btn-right:hover {
-            background: #667eea;
-            transform: scale(1.05);
-        }
-
-        /* ========== WEBSOCKET INDICATOR ========== */
-        .ws-indicator {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 10000;
-            background: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(10px);
-            padding: 6px 14px;
-            border-radius: 30px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 0.7rem;
-            cursor: pointer;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .ws-led {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-        }
-
-        .ws-led.connected {
-            background: #4ade80;
-            animation: pulse 1.5s infinite;
-        }
-
-        .ws-led.disconnected {
-            background: #f87171;
-        }
-
-        /* ========== NOTIFICATION PERMISSION ========== */
-        .notif-permission {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            z-index: 10001;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 10px 18px;
-            border-radius: 30px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 0.75rem;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            transition: all 0.2s;
-        }
-
-        .notif-permission:hover {
-            transform: scale(1.02);
-        }
-
-        /* ========== CLOSE TELEMETRY BUTTON ========== */
-        .close-telemetry {
-            position: absolute;
-            top: 10px;
-            right: 20px;
-            background: rgba(255, 255, 255, 0.1);
+        .add-device-form button {
+            padding: 8px;
+            background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
             border: none;
+            border-radius: 8px;
             color: white;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
+            font-weight: bold;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1rem;
             transition: all 0.2s;
         }
 
-        .close-telemetry:hover {
-            background: #f87171;
-            transform: scale(1.1);
+        .add-device-form button:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
         }
 
-        /* ========== MODAL ========== */
         .modal {
             display: none;
             position: fixed;
@@ -939,10 +379,6 @@
             transition: all 0.2s;
         }
 
-        .cancel-delete-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-
         .code-block {
             background: #0d0d1a;
             padding: 15px;
@@ -963,7 +399,546 @@
             margin-top: 10px;
         }
 
-        /* ========== RESPONSIVE ========== */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .telemetry-panel {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(15px);
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 12px 20px;
+            display: none;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .telemetry-panel.show {
+            display: flex;
+            transform: translateY(0);
+        }
+
+        .telemetry-section {
+            display: flex;
+            gap: 25px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .telemetry-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 16px;
+            border-radius: 12px;
+        }
+
+        .telemetry-item i {
+            font-size: 1.2rem;
+            opacity: 0.8;
+            color: #667eea;
+        }
+
+        .telemetry-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .telemetry-label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.6;
+            color: white;
+        }
+
+        .telemetry-value {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: white;
+            font-family: monospace;
+        }
+
+        .fuel-section {
+            display: flex;
+            gap: 25px;
+            align-items: center;
+            flex-wrap: wrap;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 5px 15px;
+            border-radius: 12px;
+        }
+
+        .fuel-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 5px 12px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .fuel-progress {
+            width: 80px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .fuel-progress-fill {
+            height: 100%;
+            background: #fbbf24;
+            border-radius: 3px;
+            transition: width 0.3s;
+        }
+
+        .fuel-progress-fill.low {
+            background: #f87171;
+        }
+
+        .fuel-progress-fill.medium {
+            background: #fbbf24;
+        }
+
+        .fuel-progress-fill.high {
+            background: #4ade80;
+        }
+
+        .zone-status-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 8px 20px;
+            border-radius: 40px;
+        }
+
+        .zone-label {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.7);
+            letter-spacing: 1px;
+        }
+
+        .zone-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: bold;
+        }
+
+        .zone-status.in-zone {
+            color: #4ade80;
+        }
+
+        .zone-status.out-zone {
+            color: #f87171;
+            animation: pulse 1s infinite;
+        }
+
+        .zone-status.no-zone {
+            color: #a0aec0;
+        }
+
+        .zone-name {
+            font-size: 0.85rem;
+            font-family: monospace;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        .playback-panel {
+            position: absolute;
+            bottom: 80px;
+            left: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 15px 20px;
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: none;
+        }
+
+        .playback-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .playback-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .playback-controls button {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 5px;
+            transition: all 0.2s;
+        }
+
+        .playback-controls button:hover {
+            transform: scale(1.1);
+            color: #667eea;
+        }
+
+        .playback-slider {
+            flex: 1;
+            margin: 0 15px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 4px;
+            -webkit-appearance: none;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #667eea;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .alert-toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 10001;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 12px;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            animation: slideInRight 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            max-width: 350px;
+            min-width: 250px;
+        }
+
+        .alert-toast.success {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .alert-toast.warning {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .alert-toast.info {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .geofence-tools-right {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .geo-btn-right {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .geo-btn-right:hover {
+            background: #667eea;
+            transform: scale(1.05);
+        }
+
+        .ws-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(10px);
+            padding: 6px 14px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .ws-led {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .ws-led.connected {
+            background: #4ade80;
+            animation: pulse 1.5s infinite;
+        }
+
+        .ws-led.disconnected {
+            background: #f87171;
+        }
+
+        .saved-geofences-section {
+            margin-top: 5px;
+        }
+
+        .saved-geofences-title {
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .saved-geofence-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .saved-geofence-item {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            padding: 8px;
+            margin-bottom: 8px;
+            font-size: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .saved-geofence-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateX(3px);
+        }
+
+        .delete-geo-btn {
+            background: #f87171;
+            border: none;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.7rem;
+        }
+
+        .save-geo-btn {
+            background: #4ade80;
+            border: none;
+            color: #1a1a2e;
+            padding: 2px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            margin-left: 5px;
+        }
+
+        .mode-switch {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 5px 10px;
+            border-radius: 30px;
+            margin-top: 8px;
+        }
+
+        .mode-label {
+            font-size: 0.65rem;
+            opacity: 0.8;
+        }
+
+        .mode-toggle {
+            display: flex;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 30px;
+            padding: 2px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .mode-option {
+            padding: 3px 12px;
+            font-size: 0.65rem;
+            border-radius: 30px;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        .mode-option.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .solenoid-manual-btn {
+            background: rgba(0, 0, 0, 0.5);
+            border: none;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.65rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 5px;
+            margin-right: 5px;
+            transition: all 0.2s;
+        }
+
+        .solenoid-manual-btn.on {
+            background: #f87171;
+        }
+
+        .solenoid-manual-btn.off {
+            background: #4ade80;
+            color: #1a1a2e;
+        }
+
+        .solenoid-manual-btn.on:hover {
+            background: #ef4444;
+        }
+
+        .solenoid-manual-btn.off:hover {
+            background: #22c55e;
+        }
+
+        .solenoid-manual-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .solenoid-status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.6rem;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-left: 5px;
+        }
+
+        .solenoid-status-badge.active {
+            background: #f87171;
+            color: white;
+        }
+
+        .solenoid-status-badge.inactive {
+            background: #4ade80;
+            color: #1a1a2e;
+        }
+
+        .mode-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.6rem;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-left: 5px;
+            background: #667eea;
+        }
+
+        .notif-permission {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 10001;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 10px 18px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transition: all 0.2s;
+        }
+
+        .notif-permission:hover {
+            transform: scale(1.02);
+        }
+
+        .close-telemetry {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .close-telemetry:hover {
+            background: #f87171;
+            transform: scale(1.1);
+        }
+
         @media (max-width: 768px) {
             .sidebar {
                 position: absolute;
@@ -1006,16 +981,16 @@
         <div class="sidebar-header">
             <div>
                 <h2><i class="fas fa-map-marker-alt"></i> Fleet Tracker</h2>
-                <p>Real-time GPS Monitoring</p>
+                <p>Supabase Cloud Storage</p>
             </div>
         </div>
 
         <div class="user-info" id="userInfo">
             <div class="user-name"><i class="fas fa-user-circle"></i> <span id="userName">User</span></div>
             <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            <button class="logout-btn" onclick="showSupabaseConfig()" style="margin-top: 8px; background: #667eea;"><i class="fas fa-database"></i> Konfigurasi Supabase</button>
         </div>
 
-        <!-- ACCORDION ITEM 1: TAMBAH PERANGKAT -->
         <div class="accordion-item">
             <div class="accordion-header" onclick="toggleAccordion(this)">
                 <span><i class="fas fa-microchip"></i> Tambah Perangkat ESP32</span>
@@ -1033,7 +1008,6 @@
             </div>
         </div>
 
-        <!-- ACCORDION ITEM 2: DAFTAR PERANGKAT (DEFAULT TERBUKA) -->
         <div class="accordion-item">
             <div class="accordion-header active" onclick="toggleAccordion(this)">
                 <span><i class="fas fa-list"></i> Daftar Perangkat</span>
@@ -1051,7 +1025,6 @@
             </div>
         </div>
 
-        <!-- ACCORDION ITEM 3: GEOFENCE -->
         <div class="accordion-item">
             <div class="accordion-header" onclick="toggleAccordion(this)">
                 <span><i class="fas fa-draw-polygon"></i> Geofence Tersimpan</span>
@@ -1075,7 +1048,7 @@
 
         <div class="ws-indicator" id="wsIndicator">
             <div class="ws-led disconnected" id="wsLed"></div>
-            <div><i class="fas fa-database" style="margin-right: 5px;"></i><span id="wsText">Storage: Local</span></div>
+            <div><i class="fas fa-cloud-upload-alt" style="margin-right: 5px;"></i><span id="wsText">Supabase: Offline</span></div>
         </div>
 
         <div class="geofence-tools-right">
@@ -1186,6 +1159,21 @@
     </div>
 </div>
 
+<!-- Modal Konfigurasi Supabase -->
+<div id="supabaseModal" class="modal">
+    <div class="modal-content">
+        <h3><i class="fas fa-database"></i> Konfigurasi Supabase</h3>
+        <p>Masukkan URL dan Key Supabase Anda untuk menyimpan data online</p>
+        <input type="text" id="supabaseUrl" placeholder="https://xxxxx.supabase.co" style="width:100%; padding:10px; margin:10px 0; border-radius:8px; border:none; background:rgba(255,255,255,0.1); color:white;">
+        <input type="text" id="supabaseKey" placeholder="anon public key" style="width:100%; padding:10px; margin:10px 0; border-radius:8px; border:none; background:rgba(255,255,255,0.1); color:white;">
+        <button class="confirm-delete-btn" onclick="saveSupabaseConfig()" style="background:#667eea;">Simpan & Konek</button>
+        <button class="cancel-delete-btn" onclick="closeSupabaseModal()">Batal</button>
+        <p style="margin-top:15px; font-size:0.7rem; color:#aaa;">
+            <i class="fas fa-info-circle"></i> Dapatkan URL dan Key dari <a href="https://supabase.com" target="_blank" style="color:#667eea;">Supabase.com</a>
+        </p>
+    </div>
+</div>
+
 <!-- Modal Konfirmasi Hapus -->
 <div id="confirmModal" class="modal">
     <div class="modal-content">
@@ -1212,7 +1200,259 @@
 <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
 
 <script>
-    // ==================== FUNGSI ACCORDION ====================
+    // ==================== SUPABASE CONFIGURATION ====================
+    let supabase = null;
+    let cloudConnected = false;
+    let currentUser = null;
+    
+    // Storage keys
+    const STORAGE_CURRENT_USER = 'fleet_current_user';
+    const SUPABASE_CONFIG_KEY = 'supabase_config';
+    
+    // Get Supabase config from localStorage
+    function getSupabaseConfig() {
+        const saved = localStorage.getItem(SUPABASE_CONFIG_KEY);
+        if (saved) {
+            return JSON.parse(saved);
+        }
+        return { url: '', key: '' };
+    }
+    
+    // Save Supabase config to localStorage
+    function saveSupabaseConfig() {
+        const url = document.getElementById('supabaseUrl').value.trim();
+        const key = document.getElementById('supabaseKey').value.trim();
+        
+        if (url && key) {
+            localStorage.setItem(SUPABASE_CONFIG_KEY, JSON.stringify({ url, key }));
+            initSupabase();
+            closeSupabaseModal();
+            showAlert('Konfigurasi Supabase disimpan!', 'success');
+        } else {
+            showAlert('URL dan Key harus diisi!', 'warning');
+        }
+    }
+    
+    function showSupabaseConfig() {
+        const config = getSupabaseConfig();
+        document.getElementById('supabaseUrl').value = config.url;
+        document.getElementById('supabaseKey').value = config.key;
+        document.getElementById('supabaseModal').style.display = 'flex';
+    }
+    
+    function closeSupabaseModal() {
+        document.getElementById('supabaseModal').style.display = 'none';
+    }
+    
+    function updateCloudIndicator(connected) {
+        const led = document.getElementById('wsLed');
+        const text = document.getElementById('wsText');
+        if (connected) {
+            led.className = 'ws-led connected';
+            text.innerHTML = 'Supabase: Online';
+        } else {
+            led.className = 'ws-led disconnected';
+            text.innerHTML = 'Supabase: Offline';
+        }
+        cloudConnected = connected;
+    }
+    
+    // Initialize Supabase
+    async function initSupabase() {
+        const config = getSupabaseConfig();
+        if (!config.url || !config.key) {
+            updateCloudIndicator(false);
+            console.log('Supabase not configured');
+            return false;
+        }
+        
+        try {
+            supabase = window.supabase.createClient(config.url, config.key);
+            // Test connection
+            const { data, error } = await supabase.from('devices').select('count', { count: 'exact', head: true });
+            if (!error) {
+                updateCloudIndicator(true);
+                console.log('Supabase connected!');
+                return true;
+            } else {
+                updateCloudIndicator(false);
+                console.error('Supabase connection error:', error);
+                return false;
+            }
+        } catch(e) {
+            updateCloudIndicator(false);
+            console.error('Supabase init error:', e);
+            return false;
+        }
+    }
+    
+    // ==================== DATABASE OPERATIONS ====================
+    
+    // Save device to Supabase
+    async function saveDeviceToSupabase(deviceId, deviceName) {
+        if (!supabase || !cloudConnected || !currentUser) return false;
+        
+        const { error } = await supabase
+            .from('devices')
+            .insert([{
+                device_id: deviceId,
+                device_name: deviceName,
+                user_id: currentUser.id,
+                is_custom: true,
+                created_at: new Date().toISOString()
+            }]);
+        
+        if (error) {
+            console.error('Error saving device:', error);
+            return false;
+        }
+        return true;
+    }
+    
+    // Load devices from Supabase
+    async function loadDevicesFromSupabase() {
+        if (!supabase || !cloudConnected || !currentUser) return [];
+        
+        const { data, error } = await supabase
+            .from('devices')
+            .select('*')
+            .eq('user_id', currentUser.id);
+        
+        if (error) {
+            console.error('Error loading devices:', error);
+            return [];
+        }
+        return data || [];
+    }
+    
+    // Delete device from Supabase
+    async function deleteDeviceFromSupabase(deviceId) {
+        if (!supabase || !cloudConnected || !currentUser) return false;
+        
+        const { error } = await supabase
+            .from('devices')
+            .delete()
+            .eq('device_id', deviceId)
+            .eq('user_id', currentUser.id);
+        
+        if (error) {
+            console.error('Error deleting device:', error);
+            return false;
+        }
+        return true;
+    }
+    
+    // Save position to Supabase
+    async function savePositionToSupabase(deviceId, lat, lng, speed) {
+        if (!supabase || !cloudConnected) return false;
+        
+        const { error } = await supabase
+            .from('positions')
+            .insert([{
+                device_id: deviceId,
+                latitude: lat,
+                longitude: lng,
+                speed: speed || 0,
+                timestamp: new Date().toISOString()
+            }]);
+        
+        if (error) {
+            console.error('Error saving position:', error);
+            return false;
+        }
+        return true;
+    }
+    
+    // Load positions from Supabase for playback
+    async function loadPositionsFromSupabase(deviceId, limit = 100) {
+        if (!supabase || !cloudConnected) return [];
+        
+        const { data, error } = await supabase
+            .from('positions')
+            .select('*')
+            .eq('device_id', deviceId)
+            .order('timestamp', { ascending: true })
+            .limit(limit);
+        
+        if (error) {
+            console.error('Error loading positions:', error);
+            return [];
+        }
+        return data || [];
+    }
+    
+    // Save geofence to Supabase
+    async function saveGeofenceToSupabase(name, coordinates) {
+        if (!supabase || !cloudConnected || !currentUser) return false;
+        
+        const { error } = await supabase
+            .from('geofences')
+            .insert([{
+                user_id: currentUser.id,
+                name: name,
+                coordinates: coordinates,
+                created_at: new Date().toISOString()
+            }]);
+        
+        if (error) {
+            console.error('Error saving geofence:', error);
+            return false;
+        }
+        return true;
+    }
+    
+    // Load geofences from Supabase
+    async function loadGeofencesFromSupabase() {
+        if (!supabase || !cloudConnected || !currentUser) return [];
+        
+        const { data, error } = await supabase
+            .from('geofences')
+            .select('*')
+            .eq('user_id', currentUser.id);
+        
+        if (error) {
+            console.error('Error loading geofences:', error);
+            return [];
+        }
+        return data || [];
+    }
+    
+    // Save solenoid status to Supabase
+    async function saveSolenoidStatusToSupabase(deviceId, isActive, mode) {
+        if (!supabase || !cloudConnected) return false;
+        
+        const { error } = await supabase
+            .from('solenoid_status')
+            .insert([{
+                device_id: deviceId,
+                is_active: isActive,
+                mode: mode,
+                updated_at: new Date().toISOString()
+            }]);
+        
+        if (error) {
+            console.error('Error saving solenoid status:', error);
+            return false;
+        }
+        return true;
+    }
+    
+    // Load solenoid status from Supabase
+    async function loadSolenoidStatusFromSupabase(deviceId) {
+        if (!supabase || !cloudConnected) return null;
+        
+        const { data, error } = await supabase
+            .from('solenoid_status')
+            .select('*')
+            .eq('device_id', deviceId)
+            .order('updated_at', { ascending: false })
+            .limit(1);
+        
+        if (error || !data || data.length === 0) return null;
+        return data[0];
+    }
+    
+    // ==================== ACCORDION FUNCTION ====================
     function toggleAccordion(element) {
         element.classList.toggle('active');
         const content = element.nextElementSibling;
@@ -1225,31 +1465,15 @@
         }
     }
     
-    // Buka accordion default (Daftar Perangkat)
-    document.addEventListener('DOMContentLoaded', function() {
-        const defaultOpen = document.querySelector('.accordion-header.active');
-        if (defaultOpen) {
-            const content = defaultOpen.nextElementSibling;
-            content.classList.add('show');
-            content.style.maxHeight = content.scrollHeight + "px";
-        }
-    });
-    
-    // ==================== KONFIGURASI ====================
-    const STORAGE_CURRENT_USER = 'fleet_current_user';
-    const STORAGE_PREFIX = 'fleet_user_';
-    
-    // ==================== VARIABEL ====================
+    // ==================== VARIABLES ====================
     let map, devicesData = [], positionsHistory = {};
     let currentDevice = null, currentMarker = null, vehicleIcon;
     let geofencePolygons = [], drawControl = null;
     let playbackInterval = null, currentPlaybackIndex = 0, playbackHistory = [];
-    let currentUser = null;
     let deviceToDelete = null;
     let notificationPermissionGranted = false;
     let deviceSolenoidStatus = new Map();
     let deviceMode = new Map();
-    let lastZoneStatus = new Map();
     
     // ==================== AUTH ====================
     function checkAuth() {
@@ -1275,46 +1499,79 @@
         window.location.href = 'index.html';
     }
     
-    // ==================== STORAGE FUNCTIONS ====================
-    function getUserStorageKey(baseKey) {
-        if (!currentUser) return baseKey;
-        return `${STORAGE_PREFIX}${currentUser.id}_${baseKey}`;
-    }
-    
-    function loadCustomDevices() {
-        const storageKey = getUserStorageKey('custom_devices');
-        const saved = localStorage.getItem(storageKey);
-        if (saved && saved !== 'undefined') {
-            return JSON.parse(saved);
-        }
-        return [];
-    }
-    
-    function saveCustomDevices(devices) {
-        const storageKey = getUserStorageKey('custom_devices');
-        localStorage.setItem(storageKey, JSON.stringify(devices));
-    }
-    
     // ==================== MAP INIT ====================
     function initMap() {
-        console.log("Initializing map...");
-        try {
-            map = L.map('map').setView([-6.2088, 106.8456], 13);
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-                attribution: '© CartoDB'
-            }).addTo(map);
-            vehicleIcon = L.icon({
-                iconUrl: 'https://cdn-icons-png.flaticon.com/512/744/744465.png',
-                iconSize: [40, 40], iconAnchor: [20, 20]
-            });
-            console.log("Map initialized successfully!");
-        } catch(e) {
-            console.error("Error initializing map:", e);
-            showAlert("Error loading map: " + e.message, 'error');
-        }
+        map = L.map('map').setView([-6.2088, 106.8456], 13);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '© CartoDB'
+        }).addTo(map);
+        vehicleIcon = L.icon({
+            iconUrl: 'https://cdn-icons-png.flaticon.com/512/744/744465.png',
+            iconSize: [40, 40], iconAnchor: [20, 20]
+        });
     }
     
-    // ==================== GEOFENCE TOOLS ====================
+    // ==================== LOAD DATA FROM SUPABASE ====================
+    async function loadAllData() {
+        if (!cloudConnected) {
+            showAlert('Supabase tidak terhubung. Silakan konfigurasi Supabase.', 'warning');
+            return;
+        }
+        
+        // Load devices
+        const devices = await loadDevicesFromSupabase();
+        devicesData = devices.map(d => ({
+            id: d.device_id,
+            name: d.device_name,
+            isCustom: true
+        }));
+        
+        // Load last positions for each device
+        for (const device of devicesData) {
+            const positions = await loadPositionsFromSupabase(device.id, 1);
+            if (positions.length > 0) {
+                const lastPos = positions[0];
+                if (!positionsHistory[device.id]) positionsHistory[device.id] = [];
+                positionsHistory[device.id].push({
+                    lat: lastPos.latitude,
+                    lng: lastPos.longitude,
+                    time: lastPos.timestamp,
+                    speed: lastPos.speed
+                });
+            }
+            
+            // Load solenoid status
+            const solenoidStatus = await loadSolenoidStatusFromSupabase(device.id);
+            if (solenoidStatus) {
+                deviceSolenoidStatus.set(device.id, solenoidStatus.is_active);
+                deviceMode.set(device.id, solenoidStatus.mode || 'auto');
+            }
+        }
+        
+        // Load geofences
+        const geofences = await loadGeofencesFromSupabase();
+        geofencePolygons.forEach(p => map.removeLayer(p));
+        geofencePolygons = [];
+        
+        for (const geo of geofences) {
+            const points = geo.coordinates.map(p => [p.lat, p.lng]);
+            const polygon = L.polygon(points, {
+                color: '#f5576c',
+                weight: 3,
+                fillColor: '#f5576c',
+                fillOpacity: 0.2,
+                zoneName: geo.name,
+                geoId: geo.id
+            }).addTo(map);
+            geofencePolygons.push(polygon);
+        }
+        
+        renderDeviceList();
+        loadSavedGeofenceList();
+        showAlert(`${devicesData.length} perangkat dan ${geofencePolygons.length} geofence dimuat dari Supabase`, 'success');
+    }
+    
+    // ==================== GEOFENCE FUNCTIONS ====================
     function initGeofenceTools() {
         const drawBtn = document.getElementById('drawPolygonBtnRight');
         const clearBtn = document.getElementById('clearGeofenceBtnRight');
@@ -1358,6 +1615,7 @@
                     geofencePolygons.push(poly);
                     loadSavedGeofenceList();
                     showAlert(`Geofence "${zoneName || 'Zona'}" dibuat!`, 'success');
+                    
                     map.removeControl(drawControl);
                     drawControl = null;
                     drawBtn.classList.remove('active');
@@ -1375,7 +1633,6 @@
         };
     }
     
-    // ==================== GEOFENCE STORAGE ====================
     function saveAllGeofencesToStorage() {
         if (geofencePolygons.length === 0) {
             showAlert('Tidak ada geofence untuk disimpan!', 'warning');
@@ -1392,52 +1649,33 @@
             };
         });
         
-        const storageKey = getUserStorageKey('geofences');
-        localStorage.setItem(storageKey, JSON.stringify(geofencesData));
-        loadSavedGeofenceList();
-        showAlert(`${geofencePolygons.length} geofence berhasil disimpan!`, 'success');
-    }
-    
-    function loadGeofencesFromStorage() {
-        const storageKey = getUserStorageKey('geofences');
-        const saved = localStorage.getItem(storageKey);
-        if (saved && saved !== 'undefined') {
-            try {
-                const geofencesData = JSON.parse(saved);
-                geofencePolygons.forEach(p => map.removeLayer(p));
-                geofencePolygons = [];
-                
-                geofencesData.forEach(geo => {
-                    const points = geo.coordinates.map(p => [p.lat, p.lng]);
-                    const polygon = L.polygon(points, {
-                        color: '#f5576c', weight: 3, fillColor: '#f5576c', fillOpacity: 0.2,
-                        zoneName: geo.name, geoId: geo.id
-                    }).addTo(map);
-                    geofencePolygons.push(polygon);
-                });
-                loadSavedGeofenceList();
-            } catch(e) {
-                console.error("Error loading geofences:", e);
-            }
+        // Save to Supabase
+        if (cloudConnected) {
+            geofencesData.forEach(async geo => {
+                await saveGeofenceToSupabase(geo.name, geo.coordinates);
+            });
+            showAlert(`${geofencePolygons.length} geofence disimpan ke Supabase!`, 'success');
+        } else {
+            showAlert('Supabase tidak terhubung!', 'warning');
         }
+        
+        loadSavedGeofenceList();
     }
     
     function loadSavedGeofenceList() {
-        const storageKey = getUserStorageKey('geofences');
-        const saved = localStorage.getItem(storageKey);
         const container = document.getElementById('savedGeofenceList');
         
-        if (!saved || saved === 'undefined' || JSON.parse(saved).length === 0) {
+        if (geofencePolygons.length === 0) {
             container.innerHTML = '<div style="text-align: center; padding: 10px; color: rgba(255,255,255,0.5);">Belum ada geofence tersimpan</div>';
             return;
         }
         
-        const geofences = JSON.parse(saved);
         let html = '';
-        geofences.forEach((geo, idx) => {
+        geofencePolygons.forEach((poly, idx) => {
+            const zoneName = poly.options.zoneName || `Zona ${idx + 1}`;
             html += `
                 <div class="saved-geofence-item" onclick="zoomToGeofence(${idx})">
-                    <span><i class="fas fa-draw-polygon"></i> ${geo.name}</span>
+                    <span><i class="fas fa-draw-polygon"></i> ${zoneName}</span>
                     <button class="delete-geo-btn" onclick="event.stopPropagation(); deleteGeofence(${idx})">
                         <i class="fas fa-trash"></i>
                     </button>
@@ -1451,18 +1689,6 @@
         if (confirm(`Hapus geofence "${geofencePolygons[index].options.zoneName}"?`)) {
             map.removeLayer(geofencePolygons[index]);
             geofencePolygons.splice(index, 1);
-            
-            const storageKey = getUserStorageKey('geofences');
-            const geofencesData = geofencePolygons.map(polygon => {
-                const latlngs = polygon.getLatLngs()[0];
-                return {
-                    id: polygon.options.geoId,
-                    name: polygon.options.zoneName,
-                    coordinates: latlngs.map(p => ({ lat: p.lat, lng: p.lng })),
-                    createdAt: new Date().toISOString()
-                };
-            });
-            localStorage.setItem(storageKey, JSON.stringify(geofencesData));
             loadSavedGeofenceList();
             showAlert('Geofence dihapus!', 'success');
         }
@@ -1478,45 +1704,7 @@
     }
     
     // ==================== DEVICE MANAGEMENT ====================
-    function loadDevices() {
-        devicesData = loadCustomDevices();
-        renderDeviceList();
-        startGPSSimulation();
-    }
-    
-    // Simulasi data GPS untuk demo
-    function startGPSSimulation() {
-        let devicePositions = new Map();
-        setInterval(() => {
-            if (devicesData.length === 0) return;
-            
-            devicesData.forEach(device => {
-                let pos = devicePositions.get(device.id);
-                if (!pos) {
-                    pos = { lat: -6.2088 + (Math.random() - 0.5) * 0.05, lng: 106.8456 + (Math.random() - 0.5) * 0.05 };
-                    devicePositions.set(device.id, pos);
-                }
-                
-                // Pergerakan random
-                pos.lat += (Math.random() - 0.5) * 0.01;
-                pos.lng += (Math.random() - 0.5) * 0.01;
-                pos.lat = Math.min(-6.1, Math.max(-6.3, pos.lat));
-                pos.lng = Math.min(106.95, Math.max(106.7, pos.lng));
-                devicePositions.set(device.id, pos);
-                
-                // Update ke history
-                if (!positionsHistory[device.id]) positionsHistory[device.id] = [];
-                positionsHistory[device.id].push({
-                    lat: pos.lat, lng: pos.lng, time: new Date().toISOString(), speed: Math.floor(Math.random() * 80)
-                });
-                if (positionsHistory[device.id].length > 100) positionsHistory[device.id].shift();
-                
-                renderDeviceList();
-            });
-        }, 5000);
-    }
-    
-    function addESP32Device() {
+    async function addESP32Device() {
         const deviceName = document.getElementById('newDeviceName').value.trim();
         const deviceId = document.getElementById('newDeviceId').value.trim();
         
@@ -1530,44 +1718,41 @@
             return;
         }
         
-        devicesData.push({ id: deviceId, name: deviceName, isCustom: true });
-        saveCustomDevices(devicesData);
-        
-        document.getElementById('newDeviceName').value = '';
-        document.getElementById('newDeviceId').value = '';
-        
-        renderDeviceList();
-        showAlert(`Perangkat "${deviceName}" berhasil ditambahkan!`, 'success');
-    }
-    
-    function deleteDeviceFromList(deviceId, deviceName, isCustom = false) {
-        deviceToDelete = { id: deviceId, name: deviceName, isCustom: isCustom };
-        document.getElementById('confirmMessage').innerHTML = `Hapus perangkat "${deviceName}"?`;
-        document.getElementById('confirmModal').style.display = 'flex';
-    }
-    
-    function closeConfirmModal() {
-        document.getElementById('confirmModal').style.display = 'none';
-        deviceToDelete = null;
-    }
-    
-    function confirmDeleteDevice() {
-        if (!deviceToDelete) return;
-        
-        const { id, name, isCustom } = deviceToDelete;
-        devicesData = devicesData.filter(d => d.id !== id);
-        saveCustomDevices(devicesData);
-        
-        if (currentDevice && currentDevice.id == id) {
-            if (currentMarker) map.removeLayer(currentMarker);
-            currentMarker = null;
-            currentDevice = null;
-            closeTelemetry();
+        // Save to Supabase
+        let success = false;
+        if (cloudConnected) {
+            success = await saveDeviceToSupabase(deviceId, deviceName);
         }
         
-        renderDeviceList();
-        showAlert(`Perangkat "${name}" dihapus!`, 'success');
-        closeConfirmModal();
+        if (success || !cloudConnected) {
+            devicesData.push({ id: deviceId, name: deviceName, isCustom: true });
+            renderDeviceList();
+            document.getElementById('newDeviceName').value = '';
+            document.getElementById('newDeviceId').value = '';
+            showAlert(`Perangkat "${deviceName}" berhasil ditambahkan${cloudConnected ? ' ke Supabase!' : '!'}`, 'success');
+        } else {
+            showAlert('Gagal menambahkan perangkat!', 'error');
+        }
+    }
+    
+    async function deleteDeviceFromList(deviceId, deviceName, isCustom = false) {
+        if (confirm(`Hapus perangkat "${deviceName}"?`)) {
+            if (cloudConnected) {
+                await deleteDeviceFromSupabase(deviceId);
+            }
+            
+            devicesData = devicesData.filter(d => d.id !== deviceId);
+            
+            if (currentDevice && currentDevice.id === deviceId) {
+                if (currentMarker) map.removeLayer(currentMarker);
+                currentMarker = null;
+                currentDevice = null;
+                closeTelemetry();
+            }
+            
+            renderDeviceList();
+            showAlert(`Perangkat "${deviceName}" dihapus!`, 'success');
+        }
     }
     
     function trackDevice(deviceId, deviceName) {
@@ -1575,14 +1760,22 @@
         showAlert(`Melacak: ${deviceName}`, 'success');
     }
     
-    function setDeviceMode(deviceId, mode) {
+    async function setDeviceMode(deviceId, mode) {
         deviceMode.set(deviceId, mode);
+        if (cloudConnected) {
+            const currentActive = deviceSolenoidStatus.get(deviceId) || false;
+            await saveSolenoidStatusToSupabase(deviceId, currentActive, mode);
+        }
         renderDeviceList();
         showAlert(`Mode ${mode === 'auto' ? 'AUTOMATIS' : 'MANUAL'}`, 'success');
     }
     
     function sendManualSolenoidCommand(deviceId, activate) {
         deviceSolenoidStatus.set(deviceId, activate);
+        if (cloudConnected) {
+            const mode = deviceMode.get(deviceId) || 'auto';
+            saveSolenoidStatusToSupabase(deviceId, activate, mode);
+        }
         renderDeviceList();
         showAlert(`Solenoid ${activate ? 'AKTIF' : 'NONAKTIF'}`, 'success');
     }
@@ -1599,9 +1792,8 @@
         
         let html = '';
         filtered.forEach(device => {
-            const pos = positionsHistory[device.id]?.[positionsHistory[device.id].length - 1];
+            const pos = positionsHistory[device.id]?.[0];
             const isOnline = pos && (Date.now() - new Date(pos.time).getTime() < 60000);
-            const battery = 75;
             const solenoidActive = deviceSolenoidStatus.get(device.id) || false;
             const currentModeVal = deviceMode.get(device.id) || 'auto';
             const isCustom = '<span style="background:#4ade80; color:#1a1a2e; padding:2px 5px; border-radius:4px; font-size:0.6rem;">ESP32</span>';
@@ -1609,12 +1801,8 @@
             html += `
                 <div class="device-item ${currentDevice?.id === device.id ? 'active' : ''}" onclick="selectDevice('${device.id}')">
                     <div class="device-actions">
-                        <button class="device-action-btn track-btn" onclick="event.stopPropagation(); trackDevice('${device.id}', '${device.name.replace(/'/g, "\\'")}')" title="Lacak Perangkat">
-                            <i class="fas fa-location-dot"></i>
-                        </button>
-                        <button class="device-action-btn delete-btn" onclick="event.stopPropagation(); deleteDeviceFromList('${device.id}', '${device.name.replace(/'/g, "\\'")}', ${device.isCustom || false})" title="Hapus Perangkat">
-                            <i class="fas fa-trash-alt"></i>
-                        </button>
+                        <button class="device-action-btn track-btn" onclick="event.stopPropagation(); trackDevice('${device.id}', '${device.name.replace(/'/g, "\\'")}')"><i class="fas fa-location-dot"></i></button>
+                        <button class="device-action-btn delete-btn" onclick="event.stopPropagation(); deleteDeviceFromList('${device.id}', '${device.name.replace(/'/g, "\\'")}', ${device.isCustom || false})"><i class="fas fa-trash"></i></button>
                     </div>
                     <div class="device-name">
                         <span><i class="fas fa-car"></i> ${device.name} ${isCustom}</span>
@@ -1630,7 +1818,7 @@
                             </span>
                         </span>
                     </div>
-                    <div class="battery-bar"><div class="battery-fill" style="width:${battery}%"></div></div>
+                    <div class="battery-bar"><div class="battery-fill" style="width:75%"></div></div>
                     <div class="device-info">
                         <span><i class="fas fa-tachometer-alt"></i> ${pos?.speed || 0} km/h</span>
                         <span><i class="fas fa-history"></i> ${positionsHistory[device.id]?.length || 0} rekaman</span>
@@ -1703,6 +1891,12 @@
         }
     }
     
+    function updateTelemetry(pos) {
+        if (pos) {
+            document.getElementById('speedValue').innerHTML = `${pos.speed || 0} km/h`;
+        }
+    }
+    
     function showAlert(msg, type = 'warning') {
         const toast = document.getElementById('alertToast');
         document.getElementById('alertMessage').innerHTML = msg;
@@ -1711,18 +1905,31 @@
         setTimeout(() => toast.style.display = 'none', 4000);
     }
     
-    function selectDevice(deviceId) {
+    async function selectDevice(deviceId) {
         currentDevice = devicesData.find(d => d.id == deviceId);
         showTelemetry();
         
-        const pos = positionsHistory[deviceId]?.[positionsHistory[deviceId].length - 1];
+        // Load full history from Supabase for playback
+        if (cloudConnected && (!positionsHistory[deviceId] || positionsHistory[deviceId].length < 2)) {
+            const cloudPositions = await loadPositionsFromSupabase(deviceId, 500);
+            if (cloudPositions.length > 0) {
+                positionsHistory[deviceId] = cloudPositions.map(p => ({
+                    lat: p.latitude,
+                    lng: p.longitude,
+                    time: p.timestamp,
+                    speed: p.speed
+                }));
+            }
+        }
+        
+        const pos = positionsHistory[deviceId]?.[0];
         if (pos) {
             const coords = [pos.lat, pos.lng];
             if (currentMarker) currentMarker.setLatLng(coords);
             else currentMarker = L.marker(coords, { icon: vehicleIcon }).addTo(map);
             currentMarker.bindPopup(`<b>${currentDevice.name}</b><br>📍 ${pos.lat.toFixed(6)}, ${pos.lng.toFixed(6)}`).openPopup();
             map.setView(coords, 14);
-            document.getElementById('speedValue').innerHTML = `${pos.speed || 0} km/h`;
+            updateTelemetry({ speed: pos.speed });
             checkZoneStatus(pos.lat, pos.lng, deviceId);
         }
         renderDeviceList();
@@ -1737,8 +1944,20 @@
     }
     
     // ==================== PLAYBACK ====================
-    function initPlayback(deviceId) {
-        const history = positionsHistory[deviceId];
+    async function initPlayback(deviceId) {
+        let history = positionsHistory[deviceId] || [];
+        
+        if (cloudConnected && history.length === 0) {
+            const cloudHistory = await loadPositionsFromSupabase(deviceId, 500);
+            history = cloudHistory.map(p => ({
+                lat: p.latitude,
+                lng: p.longitude,
+                time: p.timestamp,
+                speed: p.speed
+            }));
+            positionsHistory[deviceId] = history;
+        }
+        
         if (!history || history.length < 2) {
             showAlert('Riwayat tidak tersedia!', 'warning');
             return;
@@ -1824,30 +2043,57 @@
     
     // ==================== ESP32 CODE ====================
     function showESP32Code() {
+        const supabaseUrl = getSupabaseConfig().url || 'YOUR_SUPABASE_URL';
         const deviceId = document.getElementById('newDeviceId').value || 'esp32_001';
+        const deviceName = document.getElementById('newDeviceName').value || 'ESP32-Tracker';
+        
         const code = `/*
- * ESP32 GPS Tracker for Fleet Dashboard
+ * ESP32 GPS Tracker - Kirim Data ke Supabase via API
+ * Pastikan Anda sudah membuat API endpoint di Vercel
  */
 
 #include <WiFi.h>
+#include <HTTPClient.h>
+#include <ArduinoJson.h>
 #include <TinyGPS++.h>
 
+// ========== KONFIGURASI ==========
 const char* ssid = "YOUR_WIFI_SSID";
 const char* password = "YOUR_WIFI_PASSWORD";
-const char* deviceId = "${deviceId}";
-const int SOLENOID_PIN = 13;
 
+// Ganti dengan URL Vercel Anda (https://my-gps-app.vercel.app)
+const char* serverUrl = "https://my-gps-app.vercel.app/api/position";
+
+// Identitas perangkat
+const char* deviceId = "${deviceId}";
+const char* deviceName = "${deviceName}";
+
+// Pin GPIO
+const int SOLENOID_PIN = 13;
+const int LED_PIN = 2;
+
+// GPS
 TinyGPSPlus gps;
 HardwareSerial gpsSerial(2);
+
+unsigned long lastSendTime = 0;
+const unsigned long SEND_INTERVAL = 5000;
 
 void setup() {
     Serial.begin(115200);
     pinMode(SOLENOID_PIN, OUTPUT);
+    pinMode(LED_PIN, OUTPUT);
     gpsSerial.begin(9600, SERIAL_8N1, 16, 17);
     
     WiFi.begin(ssid, password);
-    while (WiFi.status() != WL_CONNECTED) { delay(500); Serial.print("."); }
-    Serial.println("\\nWiFi connected!");
+    Serial.print("Menghubungkan ke WiFi");
+    while (WiFi.status() != WL_CONNECTED) {
+        delay(500);
+        Serial.print(".");
+    }
+    Serial.println("\\nWiFi terhubung!");
+    Serial.print("Device ID: ");
+    Serial.println(deviceId);
 }
 
 void loop() {
@@ -1856,12 +2102,51 @@ void loop() {
         gps.encode(c);
     }
     
-    if (gps.location.isValid()) {
-        Serial.print("Lat: "); Serial.print(gps.location.lat(), 6);
-        Serial.print(" Lng: "); Serial.println(gps.location.lng(), 6);
-        delay(5000);
+    if (millis() - lastSendTime >= SEND_INTERVAL) {
+        if (gps.location.isValid()) {
+            sendGPSData();
+        } else {
+            Serial.print("Menunggu sinyal GPS... Satelit: ");
+            Serial.println(gps.satellites.value());
+        }
+        lastSendTime = millis();
     }
     delay(10);
+}
+
+void sendGPSData() {
+    HTTPClient http;
+    http.begin(serverUrl);
+    http.addHeader("Content-Type", "application/json");
+    
+    StaticJsonDocument<256> doc;
+    doc["deviceId"] = deviceId;
+    doc["deviceName"] = deviceName;
+    doc["latitude"] = gps.location.lat();
+    doc["longitude"] = gps.location.lng();
+    doc["speed"] = gps.speed.kmph();
+    doc["altitude"] = gps.altitude.meters();
+    doc["course"] = gps.course.deg();
+    doc["satellites"] = gps.satellites.value();
+    
+    String payload;
+    serializeJson(doc, payload);
+    
+    int httpCode = http.POST(payload);
+    
+    if (httpCode > 0) {
+        Serial.print("Data terkirim! Lat: ");
+        Serial.print(gps.location.lat(), 6);
+        Serial.print(", Lng: ");
+        Serial.print(gps.location.lng(), 6);
+        Serial.print(", Speed: ");
+        Serial.print(gps.speed.kmph());
+        Serial.println(" km/h");
+    } else {
+        Serial.printf("Gagal mengirim, HTTP code: %d\\n", httpCode);
+    }
+    
+    http.end();
 }`;
         
         document.getElementById('esp32CodeBlock').innerHTML = code.replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -1873,12 +2158,11 @@ void loop() {
     }
     
     function copyESP32Code() {
-        const codeBlock = document.getElementById('esp32CodeBlock');
-        navigator.clipboard.writeText(codeBlock.innerText);
+        navigator.clipboard.writeText(document.getElementById('esp32CodeBlock').innerText);
         showAlert('Kode disalin!', 'success');
     }
     
-    // ==================== RESPONSIVE & INIT ====================
+    // ==================== INIT ====================
     function initResponsive() {
         if(window.innerWidth <= 768){
             const sidebar = document.getElementById('sidebar');
@@ -1890,22 +2174,34 @@ void loop() {
         }
     }
     
-    // ==================== INIT ====================
-    function init() {
+    async function init() {
         console.log("Initializing dashboard...");
         checkAuth();
         initMap();
         initGeofenceTools();
-        loadDevices();
-        loadGeofencesFromStorage();
         initResponsive();
         
-        const searchInput = document.getElementById('searchDevice');
-        if (searchInput) {
-            searchInput.addEventListener('input', () => renderDeviceList());
+        // Initialize Supabase
+        await initSupabase();
+        
+        // Load data from Supabase if connected
+        if (cloudConnected) {
+            await loadAllData();
+        } else {
+            // Show config modal if not configured
+            const config = getSupabaseConfig();
+            if (!config.url || !config.key) {
+                showSupabaseConfig();
+            } else {
+                showAlert('Supabase tidak terhubung. Periksa koneksi internet dan konfigurasi.', 'warning');
+            }
+            devicesData = [];
+            renderDeviceList();
         }
         
         setInterval(updateFuelDisplay, 5000);
+        
+        document.getElementById('searchDevice')?.addEventListener('input', () => renderDeviceList());
         
         setTimeout(() => {
             if(currentMarker) currentMarker.on('popupopen', () => {
@@ -1921,7 +2217,7 @@ void loop() {
         }, 1000);
         
         console.log("Dashboard initialized!");
-        showAlert('Dashboard siap digunakan! Klik perangkat untuk melihat telemetri', 'success');
+        showAlert('Dashboard siap digunakan! Konfigurasi Supabase untuk menyimpan data online.', 'info');
     }
     
     init();
