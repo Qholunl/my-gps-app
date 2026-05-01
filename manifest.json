@@ -1,0 +1,16 @@
+{
+  "name": "Fleet Tracker GPS",
+  "short_name": "FleetTracker",
+  "description": "Real-time GPS Fleet Monitoring with Fuel Sensors",
+  "start_url": "/dashboard.html",
+  "display": "standalone",
+  "theme_color": "#1a1a2e",
+  "background_color": "#f0f2f5",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/744/744465.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}

@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>GPS Fleet Tracker - Login</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Poppins', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Container Auth */
+        .auth-container {
+            width: 100%;
+            max-width: 1200px;
+            padding: 20px;
+        }
+
+        /* Card Auth */
+        .auth-card {
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .auth-left {
+            flex: 1;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            padding: 50px;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .auth-left h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+
+        .auth-left p {
+            font-size: 1rem;
+            opacity: 0.8;
+            line-height: 1.6;
+        }
+
+        .auth-left .features {
+            margin-top: 30px;
+        }
+
+        .auth-left .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .auth-left .feature-item i {
+            width: 30px;
+            font-size: 1.2rem;
+            color: #667eea;
+        }
+
+        .auth-right {
+            flex: 1;
+            padding: 50px;
+            background: white;
+        }
+
+        .auth-tabs {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .auth-tab {
+            padding: 10px 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: #666;
+            transition: all 0.3s;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+        }
+
+        .auth-tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .auth-form {
+            display: none;
+        }
+
+        .auth-form.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            outline: none;
+        }
+
+        .form-group input:focus {
+            border-color: #667eea;
+        }
+
+        .btn-auth {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn-auth:hover {
+            transform: translateY(-2px);
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.85rem;
+            display: none;
+        }
+
+        .success-message {
+            background: #efe;
+            color: #3c3;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.85rem;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .auth-card {
+                flex-direction: column;
+            }
+            
+            .auth-left {
+                padding: 30px;
+            }
+            
+            .auth-right {
+                padding: 30px;
+            }
+            
+            .auth-left h1 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-left">
+            <h1><i class="fas fa-map-marker-alt"></i> Fleet Tracker Pro</h1>
+            <p>Solusi monitoring GPS real-time untuk armada kendaraan Anda dengan fitur lengkap dan akurat.</p>
+            <div class="features">
+                <div class="feature-item">
+                    <i class="fas fa-satellite-dish"></i>
+                    <span>Pelacakan GPS Real-time</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-draw-polygon"></i>
+                    <span>Smart Geofencing & Alert</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Telemetry Lengkap</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-history"></i>
+                    <span>Playback Riwayat Perjalanan</span>
+                </div>
+            </div>
+        </div>
+        <div class="auth-right">
+            <div class="auth-tabs">
+                <div class="auth-tab active" data-tab="login">Login</div>
+                <div class="auth-tab" data-tab="register">Daftar</div>
+            </div>
+
+            <div id="errorMsg" class="error-message"></div>
+            <div id="successMsg" class="success-message"></div>
+
+            <!-- Form Login -->
+            <div id="loginForm" class="auth-form active">
+                <form id="login">
+                    <div class="form-group">
+                        <label>Email / Username</label>
+                        <input type="text" id="loginEmail" placeholder="Masukkan email atau username" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="loginPassword" placeholder="Masukkan password" required>
+                    </div>
+                    <button type="submit" class="btn-auth">Login ke Dashboard</button>
+                </form>
+            </div>
+
+            <!-- Form Register -->
+            <div id="registerForm" class="auth-form">
+                <form id="register">
+                    <div class="form-group">
+                        <label>Nama Lengkap</label>
+                        <input type="text" id="regName" placeholder="Masukkan nama lengkap" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="regEmail" placeholder="Masukkan email" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input type="text" id="regUsername" placeholder="Masukkan username" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="regPassword" placeholder="Minimal 6 karakter" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Konfirmasi Password</label>
+                        <input type="password" id="regConfirmPassword" placeholder="Konfirmasi password" required>
+                    </div>
+                    <button type="submit" class="btn-auth">Daftar Sekarang</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Konfigurasi localStorage keys
+    const STORAGE_USERS = 'fleet_users';
+    const STORAGE_CURRENT_USER = 'fleet_current_user';
+
+    // Inisialisasi users di localStorage jika belum ada
+    function initUsers() {
+        if (!localStorage.getItem(STORAGE_USERS)) {
+            const defaultUsers = [
+                {
+                    id: 1,
+                    name: 'Admin User',
+                    email: 'admin@example.com',
+                    username: 'admin',
+                    password: 'admin123',
+                    createdAt: new Date().toISOString()
+                }
+            ];
+            localStorage.setItem(STORAGE_USERS, JSON.stringify(defaultUsers));
+        }
+    }
+
+    // Tampilkan pesan error
+    function showError(message) {
+        const errorDiv = document.getElementById('errorMsg');
+        errorDiv.textContent = message;
+        errorDiv.style.display = 'block';
+        
+        setTimeout(() => {
+            errorDiv.style.display = 'none';
+        }, 4000);
+    }
+
+    // Tampilkan pesan sukses
+    function showSuccess(message) {
+        const successDiv = document.getElementById('successMsg');
+        successDiv.textContent = message;
+        successDiv.style.display = 'block';
+        
+        setTimeout(() => {
+            successDiv.style.display = 'none';
+        }, 4000);
+    }
+
+    // Fungsi Register
+    function registerUser(event) {
+        event.preventDefault();
+        
+        const name = document.getElementById('regName').value.trim();
+        const email = document.getElementById('regEmail').value.trim();
+        const username = document.getElementById('regUsername').value.trim();
+        const password = document.getElementById('regPassword').value;
+        const confirmPassword = document.getElementById('regConfirmPassword').value;
+        
+        // Validasi
+        if (!name || !email || !username || !password) {
+            showError('Semua field harus diisi!');
+            return;
+        }
+        
+        if (password !== confirmPassword) {
+            showError('Password dan konfirmasi password tidak cocok!');
+            return;
+        }
+        
+        if (password.length < 6) {
+            showError('Password minimal 6 karakter!');
+            return;
+        }
+        
+        // Ambil users dari localStorage
+        const users = JSON.parse(localStorage.getItem(STORAGE_USERS));
+        
+        // Cek apakah email atau username sudah terdaftar
+        const existingUser = users.find(u => u.email === email || u.username === username);
+        if (existingUser) {
+            showError('Email atau username sudah terdaftar!');
+            return;
+        }
+        
+        // Buat user baru
+        const newUser = {
+            id: users.length + 1,
+            name: name,
+            email: email,
+            username: username,
+            password: password,
+            createdAt: new Date().toISOString()
+        };
+        
+        users.push(newUser);
+        localStorage.setItem(STORAGE_USERS, JSON.stringify(users));
+        
+        showSuccess('Pendaftaran berhasil! Silakan login.');
+        
+        // Reset form
+        document.getElementById('register').reset();
+        
+        // Pindah ke tab login setelah 1.5 detik
+        setTimeout(() => {
+            document.querySelector('[data-tab="login"]').click();
+        }, 1500);
+    }
+
+    // Fungsi Login
+    function loginUser(event) {
+        event.preventDefault();
+        
+        const emailOrUsername = document.getElementById('loginEmail').value.trim();
+        const password = document.getElementById('loginPassword').value;
+        
+        if (!emailOrUsername || !password) {
+            showError('Email/Username dan password harus diisi!');
+            return;
+        }
+        
+        // Ambil users dari localStorage
+        const users = JSON.parse(localStorage.getItem(STORAGE_USERS));
+        
+        // Cari user berdasarkan email atau username
+        const user = users.find(u => 
+            (u.email === emailOrUsername || u.username === emailOrUsername) && 
+            u.password === password
+        );
+        
+        if (!user) {
+            showError('Email/Username atau password salah!');
+            return;
+        }
+        
+        // Simpan session user
+        const sessionUser = {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            username: user.username,
+            loginTime: new Date().toISOString()
+        };
+        
+        localStorage.setItem(STORAGE_CURRENT_USER, JSON.stringify(sessionUser));
+        
+        showSuccess('Login berhasil! Mengarahkan ke dashboard...');
+        
+        // Redirect ke dashboard
+        setTimeout(() => {
+            window.location.href = 'dashboard.html';
+        }, 1500);
+    }
+
+    // Tab switching
+    function initTabs() {
+        const tabs = document.querySelectorAll('.auth-tab');
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabName = tab.getAttribute('data-tab');
+                
+                // Update active tab
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                // Update active form
+                if (tabName === 'login') {
+                    loginForm.classList.add('active');
+                    registerForm.classList.remove('active');
+                } else {
+                    loginForm.classList.remove('active');
+                    registerForm.classList.add('active');
+                }
+                
+                // Clear messages
+                document.getElementById('errorMsg').style.display = 'none';
+                document.getElementById('successMsg').style.display = 'none';
+            });
+        });
+    }
+
+    // Cek apakah user sudah login
+    function checkAuth() {
+        const currentUser = localStorage.getItem(STORAGE_CURRENT_USER);
+        if (currentUser) {
+            // User sudah login, redirect ke dashboard
+            window.location.href = 'dashboard.html';
+        }
+    }
+
+    // Inisialisasi
+    initUsers();
+    checkAuth();
+    initTabs();
+    
+    // Event listeners
+    document.getElementById('login').addEventListener('submit', loginUser);
+    document.getElementById('register').addEventListener('submit', registerUser);
+</script>
+
+</body>
+</html>
